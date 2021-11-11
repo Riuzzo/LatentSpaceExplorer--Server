@@ -1,0 +1,7 @@
+.venv
+.vscode
+
+**/__pycache__
+
+dockerfiles
+k8s

@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: server
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  rules:
+    - host: lse.neanias.eu
+      http:
+        paths:
+          - pathType: Prefix
+            path: /server(/|$)(.*)
+            backend:
+              service:
+                name: server
+                port:
+                  number: 8080
+  tls:
+    - hosts:
+      - lse.neanias.eu
+      secretName: lse-tls-cert

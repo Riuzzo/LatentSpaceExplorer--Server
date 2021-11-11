@@ -1,0 +1,9 @@
+FROM lucaspuerari/server:v0.0.3-base
+
+COPY ./tests /app/tests
+
+WORKDIR /app/src
+
+ENV ENVIRONMENT staging
+
+CMD ["python3", "main.py"]

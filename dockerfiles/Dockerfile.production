@@ -1,0 +1,7 @@
+FROM lucaspuerari/server:v0.0.3-base
+
+WORKDIR /app/src
+
+ENV ENVIRONMENT production
+
+CMD ["python3", "main.py"]
