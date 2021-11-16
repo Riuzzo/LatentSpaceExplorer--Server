@@ -93,11 +93,9 @@ def reduction(algorithm, components, params, user_id, experiment_id):
     # save metadata
 
     metadata = {
-        'embeddings_file': 'embeddings.json',
         'algorithm': algorithm,
         'components': components,
         'params': params,
-        'reduction_file': reduction_file,
         'start_datetime': time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(start_time)),
         'end_datetime': time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(end_time)),
         'seconds_elapsed': int(end_time - start_time)
@@ -161,10 +159,8 @@ def clustering(algorithm, params, user_id, experiment_id):
     # save metadata
 
     metadata = {
-        'embeddings_file': constants.EMBEDDINGS_FILENAME,
         'algorithm': algorithm,
         'params': params,
-        'cluster_file': cluster_file,
         'start_datetime': time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(start_time)),
         'end_datetime': time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(start_time)),
         'seconds_elapsed': int(end_time - start_time)

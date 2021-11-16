@@ -6,10 +6,8 @@ from typing import Optional
 # params
 
 class MetadataParams(BaseModel):
-    embeddings_file: str
     algorithm: str
     params: dict
-    cluster_file: str
     start_datetime: str
     end_datetime: str
     seconds_elapsed: int

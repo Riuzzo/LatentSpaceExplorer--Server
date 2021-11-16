@@ -71,25 +71,17 @@ def get_single_cluster(cluster_id: str, experiment_id: str, request: Request, us
     data_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
     
     experiment_path = os.path.join(data_dir, experiment_id)
-    cluster_path = os.path.join(data_dir, experiment_id, constants.CLUSTER_DIR, cluster_id)
+    cluster_path = os.path.join(experiment_path, constants.CLUSTER_DIR, cluster_id)
 
     metadata_file = os.path.join(cluster_path, constants.METADATA_FILENAME)
-    labels_file = os.path.join(experiment_path, constants.LABELS_FILENAME)
     cluster_file = os.path.join(cluster_path, constants.CLUSTER_FILENAME)
+    
     try:
         response['metadata'] = json.loads(storage.get_file(metadata_file))
     except owncloud.owncloud.HTTPResponseError:
         return JSONResponse(
             status_code=404,
             content={"message": "Cluster folder or metadata file doesn't exist"}
-        )
-
-    try:
-        response['labels'] = json.loads(storage.get_file(labels_file))
-    except owncloud.owncloud.HTTPResponseError:
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Cluster folder or labels file doesn't exist"}
         )
 
     try:
