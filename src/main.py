@@ -39,7 +39,7 @@ async def storage_middleware(request: Request, call_next):
     return response
 
 
-# routes
+# routers
 app.include_router(experiment.router)
 app.include_router(reduction.router)
 app.include_router(cluster.router)
