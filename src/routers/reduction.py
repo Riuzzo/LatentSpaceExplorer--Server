@@ -43,15 +43,16 @@ def get_all_reductions( experiment_id: str, request: Request, user_id: dict = De
         )
     
     for red in reductions:
-        reduction = {}
-        reduction["id"] = red.name
-        path = os.path.join(red.path, constants.METADATA_FILENAME)
-        try:
-            reduction['metadata'] = json.loads(storage.get_file(path))
-            response.append(reduction)
+        if red.file_type == 'dir':
+            record = {}
+            record["id"] = red.name
+            path = os.path.join(red.path, constants.METADATA_FILENAME)
+            try:
+                record['metadata'] = json.loads(storage.get_file(path))
+                response.append(record)
 
-        except owncloud.owncloud.HTTPResponseError:
-            pass # If the file is deleted, don't add it to the list
+            except owncloud.owncloud.HTTPResponseError:
+                pass # If the file is deleted, don't add it to the list
     
     return response
 
