@@ -23,4 +23,4 @@ class MetadataReductionModel(BaseModel):
 class ReductionModel(BaseModel):
     metadata: MetadataParams
     reduction: List[List[float]]
-    labels: List[str]
+    labels: List[dict]
