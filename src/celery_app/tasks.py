@@ -126,6 +126,8 @@ def clustering(algorithm, params, user_id, experiment_id):
             eps=params['eps'],
             min_samples=params['min_samples']
         ).fit_predict(embeddings)
+        
+        clustering += 1
 
     elif algorithm == 'affinity_propagation':
         clustering = AffinityPropagation().fit_predict(embeddings)

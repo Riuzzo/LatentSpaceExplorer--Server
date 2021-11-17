@@ -42,11 +42,15 @@ def get_all_clusters(experiment_id: str, request: Request, user_id: dict = Depen
         )
 
     for clus in clusters:
-        cluster = {}
-        cluster["id"] = clus.name
-        path = os.path.join(clus.path, constants.METADATA_FILENAME)
-        cluster['metadata'] = json.loads(storage.get_file(path))
-        response.append(cluster)
+        if clus.file_type == 'dir':
+            record = {}
+            record["id"] = clus.name
+            path = os.path.join(clus.path, constants.METADATA_FILENAME)
+            try:
+                record['metadata'] = json.loads(storage.get_file(path))
+                response.append(record)
+            except owncloud.owncloud.HTTPResponseError:
+                pass # If the file is deleted, don't add it to the list
     
     return response
 
