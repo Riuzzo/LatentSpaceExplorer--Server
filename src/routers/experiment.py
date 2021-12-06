@@ -33,16 +33,15 @@ def get_experiments(request: Request, user_id: dict = Depends(authorization)):
 
     user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
 
-    experiments = storage.list(user_dir, depth=1)
+    experiments = storage.list(user_dir)
 
     for experiment in experiments:
         if experiment.file_type == 'dir':
             exp = {}
+            exp["id"] = experiment.name
 
             metadata_path = os.path.join(
                 experiment.path, constants.METADATA_FILENAME)
-
-            exp["id"] = experiment.name
 
             try:
                 metadata = storage.get_file(metadata_path)
