@@ -6,7 +6,7 @@ from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
 from typing import List
 
-from src.models.responses.experiment import ExperimentsModel, ExperimentModel
+from src.models.responses.experiment import ExperimentBaseModel, ExperimentModel
 from src.models.responses.error import ErrorModel
 
 import src.utils.constants as constants
@@ -19,7 +19,7 @@ router = APIRouter()
     "/experiments",
     tags=["experiment"],
     summary="Get experiments",
-    response_model=List[ExperimentsModel],
+    response_model=List[ExperimentModel],
     responses={
         404: {
             "description": "Experiments not found",
@@ -58,7 +58,7 @@ def get_experiments(request: Request, user_id: dict = Depends(authorization)):
     "/experiments/{experiment_id}",
     tags=["experiment"],
     summary="Get experiment",
-    response_model=ExperimentModel,
+    response_model=ExperimentBaseModel,
     responses={
         404: {
             "description": "Experiment not found",

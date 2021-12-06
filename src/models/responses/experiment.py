@@ -7,32 +7,32 @@ from typing import Dict, List
 ###############################################################################
 
 
-class Preview(BaseModel):
+class PreviewModel(BaseModel):
     r: int
     g: int
     b: int
 
 
-class Channels(BaseModel):
+class ChannelsModel(BaseModel):
     map: Dict
-    preview: Preview
+    preview: PreviewModel
 
 
-class Image(BaseModel):
+class ImageModel(BaseModel):
     format: str
     dim: int
-    channels: Channels
+    channels: ChannelsModel
 
 
-class Dataset(BaseModel):
+class DatasetModel(BaseModel):
     split_threshold: int
 
 
-class Preprocessing(BaseModel):
+class PreprocessingModel(BaseModel):
     normalization_type: str
 
 
-class Augmentation(BaseModel):
+class AugmentationModel(BaseModel):
     threshold: int
     flip_x: bool
     flip_y: bool
@@ -40,27 +40,27 @@ class Augmentation(BaseModel):
     shift: Dict
 
 
-class Architecture(BaseModel):
+class ArchitectureModel(BaseModel):
     name: str
     filters: List
     latent_dim: int
 
 
-class Training(BaseModel):
+class TrainingModel(BaseModel):
     epochs: int
     batch_size: int
     optimizer: Dict
     loss: str
 
 
-class Metadata(BaseModel):
+class MetadataModel(BaseModel):
     name: str
-    image: Image
-    dataset: Dataset
-    preprocessing: Preprocessing
-    augmentation: Augmentation
-    architecture: Architecture
-    training: Training
+    image: ImageModel
+    dataset: DatasetModel
+    preprocessing: PreprocessingModel
+    augmentation: AugmentationModel
+    architecture: ArchitectureModel
+    training: TrainingModel
 
 
 ###############################################################################
@@ -68,10 +68,10 @@ class Metadata(BaseModel):
 ###############################################################################
 
 
-class ExperimentsModel(BaseModel):
-    id: str
-    metadata: Metadata
+class ExperimentBaseModel(BaseModel):
+    metadata: MetadataModel
 
 
 class ExperimentModel(BaseModel):
-    metadata: Metadata
+    id: str
+    metadata: MetadataModel
