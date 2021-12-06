@@ -14,6 +14,7 @@ from src.utils.authorization import authorization
 
 router = APIRouter()
 
+
 @router.get(
     "/experiments",
     tags=["experiment"],
@@ -30,32 +31,26 @@ def get_experiments(request: Request, user_id: dict = Depends(authorization)):
     response = []
     storage = request.state.storage
 
-    data_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-    
-    try:
-        experiments = storage.list(data_dir, depth=1)
+    user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
 
-    except owncloud.owncloud.HTTPResponseError:
-        return JSONResponse(
-            status_code=404,
-            content={"message": "User folder doesn't exist"}
-        )
+    experiments = storage.list(user_dir, depth=1)
 
-    for exp in experiments:
-        if exp.file_type != 'file':
-            experiment = {}
-        
-            metadata_path = os.path.join(exp.path, constants.METADATA_FILENAME)
+    for experiment in experiments:
+        if experiment.file_type == 'dir':
+            exp = {}
 
-            experiment["id"] = exp.name
-        
+            metadata_path = os.path.join(
+                experiment.path, constants.METADATA_FILENAME)
+
+            exp["id"] = experiment.name
+
             try:
                 metadata = storage.get_file(metadata_path)
-                experiment['metadata'] = json.loads(metadata)
-                response.append(experiment)    
-        
+                exp['metadata'] = json.loads(metadata)
+                response.append(exp)
+
             except owncloud.owncloud.HTTPResponseError:
-                pass # If the file is deleted, don't add it to the list
+                pass
 
     return response
 
@@ -76,18 +71,18 @@ def get_experiment(request: Request, experiment_id: str, user_id: dict = Depends
     response = {}
     storage = request.state.storage
 
-    data_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-    experiment_path = os.path.join(data_dir, experiment_id)
+    user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
 
+    experiment_path = os.path.join(user_dir, experiment_id)
     metadata_path = os.path.join(experiment_path, 'metadata.json')
-    
+
     try:
         metadata = storage.get_file(metadata_path)
 
     except owncloud.owncloud.HTTPResponseError:
         return JSONResponse(
             status_code=404,
-            content={"message": "Experiment-id not valid"}
+            content={"message": "Experiment id not valid"}
         )
 
     response['metadata'] = json.loads(metadata)
@@ -109,8 +104,9 @@ def get_experiment(request: Request, experiment_id: str, user_id: dict = Depends
 def delete_experiment(request: Request, experiment_id: str, user_id: dict = Depends(authorization)):
     storage = request.state.storage
 
-    data_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-    experiment_path = os.path.join(data_dir, experiment_id)
+    user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
+
+    experiment_path = os.path.join(user_dir, experiment_id)
 
     try:
         storage.delete(experiment_path)
@@ -118,7 +114,8 @@ def delete_experiment(request: Request, experiment_id: str, user_id: dict = Depe
     except owncloud.owncloud.HTTPResponseError:
         return JSONResponse(
             status_code=404,
-            content={"message": "Experiment-id not valid or user folder doesn't exist"}
+            content={
+                "message": "Experiment id not valid"}
         )
 
     return True
