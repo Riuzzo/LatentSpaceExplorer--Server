@@ -1,9 +1,12 @@
+from logging import exception
 import os
 from dotenv import load_dotenv
+from fastapi.exceptions import HTTPException
 
 # server
 import uvicorn
 from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 # routers
@@ -21,8 +24,7 @@ storage = Storage(host=os.getenv('NEXCLOUD_HOST'))
 app = FastAPI(root_path=os.getenv('APP_SERVER_ROOT_PATH'))
 
 
-# middlewares
-
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -32,11 +34,16 @@ app.add_middleware(
 )
 
 
+# storage middleware
 @app.middleware("http")
 async def storage_middleware(request: Request, call_next):
     request.state.storage = storage
-    response = await call_next(request)
-    return response
+
+    try:
+        return await call_next(request)
+
+    except HTTPException as exeption:
+        return JSONResponse(status_code=exeption.status_code, content=exception.detail)
 
 
 # routers
@@ -47,8 +54,7 @@ app.include_router(task.router)
 app.include_router(image.router)
 
 
-# events
-
+# startup event
 @app.on_event("startup")
 async def startup():
     storage.connect(
@@ -57,6 +63,7 @@ async def startup():
     )
 
 
+# shutdown event
 @app.on_event("shutdown")
 async def shutdown():
     storage.disconnect()
