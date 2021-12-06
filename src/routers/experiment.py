@@ -22,7 +22,7 @@ router = APIRouter()
     response_model=List[ExperimentsModel],
     responses={
         404: {
-            "description": "Item not found",
+            "description": "Experiments not found",
             "model": ErrorModel
         }
     }
@@ -61,7 +61,7 @@ def get_experiments(request: Request, user_id: dict = Depends(authorization)):
     response_model=ExperimentModel,
     responses={
         404: {
-            "description": "Item not found",
+            "description": "Experiment not found",
             "model": ErrorModel
         }
     }
@@ -95,7 +95,7 @@ def get_experiment(request: Request, experiment_id: str, user_id: dict = Depends
     summary="Delete experiment",
     responses={
         404: {
-            "description": "Item not found",
+            "description": "Experiment not found",
             "model": ErrorModel
         }
     }
