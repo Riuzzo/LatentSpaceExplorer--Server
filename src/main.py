@@ -1,4 +1,3 @@
-from logging import exception
 import os
 from dotenv import load_dotenv
 from fastapi.exceptions import HTTPException
@@ -42,8 +41,8 @@ async def storage_middleware(request: Request, call_next):
     try:
         return await call_next(request)
 
-    except HTTPException as exeption:
-        return JSONResponse(status_code=exeption.status_code, content=exception.detail)
+    except HTTPException as exception:
+        return JSONResponse(status_code=exception.status_code, content=exception.detail)
 
 
 # routers

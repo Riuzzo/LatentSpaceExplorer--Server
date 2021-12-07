@@ -11,11 +11,24 @@ class Storage():
     def disconnect(self):
         return self.oc.logout()
 
+    def file_exist(self, file_path):
+        try:
+            file = self.oc.file_info(file_path)
+            return file.file_type == 'file'
+
+        except owncloud.owncloud.HTTPResponseError:
+            return False
+
+    def dir_exist(self, dir_path):
+        try:
+            dir = self.oc.file_info(dir_path)
+            return dir.file_type == 'dir'
+
+        except owncloud.owncloud.HTTPResponseError:
+            return False
+
     def list(self, dir_path, depth=1):
         return self.oc.list(dir_path, depth)
-
-    def file_info(self, file_path):
-        return self.oc.file_info(file_path)
 
     def get_file(self, file_path):
         return self.oc.get_file_contents(file_path)

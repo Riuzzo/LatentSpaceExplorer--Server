@@ -1,6 +1,5 @@
 import os
 import json
-import owncloud
 
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
@@ -43,13 +42,10 @@ def get_experiments(request: Request, user_id: dict = Depends(authorization)):
             metadata_path = os.path.join(
                 experiment.path, constants.METADATA_FILENAME)
 
-            try:
+            if storage.file_exist(metadata_path):
                 metadata = storage.get_file(metadata_path)
                 exp['metadata'] = json.loads(metadata)
                 response.append(exp)
-
-            except owncloud.owncloud.HTTPResponseError:
-                pass
 
     return response
 
@@ -61,7 +57,7 @@ def get_experiments(request: Request, user_id: dict = Depends(authorization)):
     response_model=ExperimentBaseModel,
     responses={
         404: {
-            "description": "Experiment not found",
+            "description": "Experiments not found",
             "model": ErrorModel
         }
     }
@@ -72,18 +68,22 @@ def get_experiment(request: Request, experiment_id: str, user_id: dict = Depends
 
     user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
 
-    experiment_path = os.path.join(user_dir, experiment_id)
-    metadata_path = os.path.join(experiment_path, 'metadata.json')
+    experiment_dir = os.path.join(user_dir, experiment_id)
+    metadata_path = os.path.join(experiment_dir, 'metadata.json')
 
-    try:
-        metadata = storage.get_file(metadata_path)
-
-    except owncloud.owncloud.HTTPResponseError:
+    if not storage.dir_exist(experiment_dir):
         return JSONResponse(
             status_code=404,
             content={"message": "Experiment id not valid"}
         )
 
+    if not storage.file_exist(metadata_path):
+        return JSONResponse(
+            status_code=404,
+            content={"message": "Experiment metadata file not exist"}
+        )
+
+    metadata = storage.get_file(metadata_path)
     response['metadata'] = json.loads(metadata)
 
     return response
@@ -105,16 +105,15 @@ def delete_experiment(request: Request, experiment_id: str, user_id: dict = Depe
 
     user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
 
-    experiment_path = os.path.join(user_dir, experiment_id)
+    experiment_dir = os.path.join(user_dir, experiment_id)
 
-    try:
-        storage.delete(experiment_path)
-
-    except owncloud.owncloud.HTTPResponseError:
+    if not storage.dir_exist(experiment_dir):
         return JSONResponse(
             status_code=404,
             content={
                 "message": "Experiment id not valid"}
         )
+
+    storage.delete(experiment_dir)
 
     return True

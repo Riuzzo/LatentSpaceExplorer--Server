@@ -7,32 +7,32 @@ from typing import Dict, List
 ###############################################################################
 
 
-class PreviewModel(BaseModel):
+class Preview(BaseModel):
     r: int
     g: int
     b: int
 
 
-class ChannelsModel(BaseModel):
+class Channels(BaseModel):
     map: Dict
-    preview: PreviewModel
+    preview: Preview
 
 
-class ImageModel(BaseModel):
+class Image(BaseModel):
     format: str
     dim: int
-    channels: ChannelsModel
+    channels: Channels
 
 
-class DatasetModel(BaseModel):
+class Dataset(BaseModel):
     split_threshold: int
 
 
-class PreprocessingModel(BaseModel):
+class Preprocessing(BaseModel):
     normalization_type: str
 
 
-class AugmentationModel(BaseModel):
+class Augmentation(BaseModel):
     threshold: int
     flip_x: bool
     flip_y: bool
@@ -40,27 +40,27 @@ class AugmentationModel(BaseModel):
     shift: Dict
 
 
-class ArchitectureModel(BaseModel):
+class Architecture(BaseModel):
     name: str
     filters: List
     latent_dim: int
 
 
-class TrainingModel(BaseModel):
+class Training(BaseModel):
     epochs: int
     batch_size: int
     optimizer: Dict
     loss: str
 
 
-class MetadataModel(BaseModel):
+class Metadata(BaseModel):
     name: str
-    image: ImageModel
-    dataset: DatasetModel
-    preprocessing: PreprocessingModel
-    augmentation: AugmentationModel
-    architecture: ArchitectureModel
-    training: TrainingModel
+    image: Image
+    dataset: Dataset
+    preprocessing: Preprocessing
+    augmentation: Augmentation
+    architecture: Architecture
+    training: Training
 
 
 ###############################################################################
@@ -69,9 +69,9 @@ class MetadataModel(BaseModel):
 
 
 class ExperimentBaseModel(BaseModel):
-    metadata: MetadataModel
+    metadata: Metadata
 
 
 class ExperimentModel(BaseModel):
     id: str
-    metadata: MetadataModel
+    metadata: Metadata

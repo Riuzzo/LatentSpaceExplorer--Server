@@ -1,9 +1,13 @@
-from typing import List
 from pydantic import BaseModel
 from typing import Optional
 
 
-class MetadataTaskModel(BaseModel):
+###############################################################################
+# Models
+###############################################################################
+
+
+class TaskBaseModel(BaseModel):
     task_id: str
 
 
@@ -12,3 +16,7 @@ class TaskModel(BaseModel):
     status: str
     name: Optional[str]
     result_id: Optional[str]
+
+
+class TaskCountModel(BaseModel):
+    count: int

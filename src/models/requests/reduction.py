@@ -2,42 +2,44 @@ from pydantic import BaseModel, Field
 from typing import Literal
 
 
-##########################################
-############### PARAMS ###################
-##########################################
+###############################################################################
+# Submodels
+###############################################################################
 
-class PCAParams(BaseModel):
+
+class PCA(BaseModel):
     pass
 
 
-class TSNEParams(BaseModel):
+class TSNE(BaseModel):
     perplexity: int = Field(ge=5, le=50)
     iterations: int = Field(ge=250, le=5000)
     learning_rate: int = Field(ge=10, le=1000)
 
 
-class UMAPParams(BaseModel):
+class UMAP(BaseModel):
     neighbors: int = Field(ge=2, le=200)
     min_distance: float = Field(ge=0.01, le=0.99)
 
 
-##########################################
-############### MODELS ###################
-##########################################
+###############################################################################
+# Models
+###############################################################################
+
 
 class PCAModel(BaseModel):
     algorithm: Literal['pca']
     components: int = Field(ge=2, le=3)
-    params: PCAParams
+    params: PCA
 
 
 class TSNEModel(BaseModel):
     algorithm: Literal['tsne']
     components: int = Field(ge=2, le=3)
-    params: TSNEParams
+    params: TSNE
 
 
 class UMAPModel(BaseModel):
     algorithm: Literal['umap']
     components: int = Field(ge=2, le=3)
-    params: UMAPParams
+    params: UMAP

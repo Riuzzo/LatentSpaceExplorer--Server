@@ -43,14 +43,11 @@ def shutdown_worker(**kwargs):
 
 
 @celery.task(name="reduction")
-def reduction(algorithm, components, params, user_id, experiment_id):
-
-    # load embeddings
-    data_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
+def reduction(algorithm, components, params, experiment_id, user_id):
+    user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
 
     embeddings_path = os.path.join(
-        data_dir, experiment_id, constants.EMBEDDINGS_FILENAME)
-    #mkdir(os.path.join(data_folder, experiment_id, "provacelery2"))
+        user_dir, experiment_id, constants.EMBEDDINGS_FILENAME)
     embeddings = json.loads(storage.get_file(embeddings_path))
 
     start_time = time.time()
@@ -76,16 +73,17 @@ def reduction(algorithm, components, params, user_id, experiment_id):
         ).fit_transform(embeddings)
 
     end_time = time.time()
-    #mkdir(os.path.join(data_folder, experiment_id, "provacelerydopocalcolo"))
+
     # setup result
 
     result_id = str(int(time.time()))
     result_dir = os.path.join(
-        data_dir, experiment_id, constants.REDUCTION_DIR, result_id)
+        user_dir, experiment_id, constants.REDUCTION_DIR, result_id)
 
     storage.mkdir(result_dir)
 
     # save reduction
+
     reduction_file = os.path.join(result_dir, 'reduction.json')
 
     storage.put_file(reduction_file, json.dumps(reduction.tolist()))
@@ -101,20 +99,18 @@ def reduction(algorithm, components, params, user_id, experiment_id):
         'seconds_elapsed': int(end_time - start_time)
     }
 
-    metadata_file = os.path.join(result_dir, 'metadata.json')
-    storage.put_file(metadata_file, json.dumps(metadata))
+    metadata_path = os.path.join(result_dir, 'metadata.json')
+    storage.put_file(metadata_path, json.dumps(metadata))
 
     return result_id
 
 
-@celery.task(name="clustering")
-def clustering(algorithm, params, user_id, experiment_id):
-    # load embeddings
-
-    data_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
+@celery.task(name="cluster")
+def cluster(algorithm, params, experiment_id, user_id):
+    user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
 
     embeddings_path = os.path.join(
-        data_dir, experiment_id, constants.EMBEDDINGS_FILENAME)
+        user_dir, experiment_id, constants.EMBEDDINGS_FILENAME)
     embeddings = json.loads(storage.get_file(embeddings_path))
 
     start_time = time.time()
@@ -126,7 +122,8 @@ def clustering(algorithm, params, user_id, experiment_id):
             eps=params['eps'],
             min_samples=params['min_samples']
         ).fit_predict(embeddings)
-        
+
+        # add 1 to avoid -1 as outlier cluster
         clustering += 1
 
     elif algorithm == 'affinity_propagation':
@@ -149,7 +146,7 @@ def clustering(algorithm, params, user_id, experiment_id):
 
     result_id = str(int(time.time()))
     result_dir = os.path.join(
-        data_dir, experiment_id, constants.CLUSTER_DIR, result_id)
+        user_dir, experiment_id, constants.CLUSTER_DIR, result_id)
 
     storage.mkdir(result_dir)
 
@@ -167,8 +164,8 @@ def clustering(algorithm, params, user_id, experiment_id):
         'end_datetime': time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(start_time)),
         'seconds_elapsed': int(end_time - start_time)
     }
-    metadata_file = os.path.join(result_dir, constants.METADATA_FILENAME)
 
-    storage.put_file(metadata_file, json.dumps(metadata))
+    metadata_path = os.path.join(result_dir, constants.METADATA_FILENAME)
+    storage.put_file(metadata_path, json.dumps(metadata))
 
     return result_id
