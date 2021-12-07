@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from typing import Union, List
 
 from src.celery_app import tasks
-from src.models.requests.cluster import AffinityPropagationModel, DBSCANModel, KMeansModel, AgglomerativeClusteringModel
+from src.models.requests.cluster import DBSCANModel, AffinityPropagationModel, KMeansModel, AgglomerativeClusteringModel, SpectralClusteringModel, OPTICSModel
 from src.models.responses.cluster import ClusterBaseModel, ClusterModel
 from src.models.responses.task import TaskBaseModel
 from src.models.responses.error import ErrorModel
@@ -136,7 +136,7 @@ def get_cluster(request: Request, experiment_id: str, cluster_id: str, user_id: 
 def post_cluster(
     request: Request,
     cluster: Union[
-        AffinityPropagationModel, DBSCANModel, KMeansModel, AgglomerativeClusteringModel
+        AffinityPropagationModel, DBSCANModel, KMeansModel, AgglomerativeClusteringModel, SpectralClusteringModel, OPTICSModel
     ],
     experiment_id: str, user_id: dict = Depends(authorization)
 ):

@@ -4,12 +4,13 @@ import json
 from dotenv import load_dotenv
 
 # reduction algorithms
-from sklearn.decomposition import PCA
-from sklearn.manifold import TSNE
+from sklearn.decomposition import PCA, TruncatedSVD
+from sklearn.manifold import TSNE, SpectralEmbedding, Isomap, MDS
 from umap import UMAP
 
 # clustering algorithm
-from sklearn.cluster import DBSCAN, AffinityPropagation, KMeans, AgglomerativeClustering
+from sklearn.cluster import DBSCAN, AffinityPropagation, KMeans, AgglomerativeClustering, SpectralClustering, OPTICS
+# from hdbscan import HDBSCAN
 
 # scheduler
 from celery import Celery
@@ -55,21 +56,49 @@ def reduction(algorithm, components, params, experiment_id, user_id):
     # calculate reduction
 
     if algorithm == 'pca':
-        reduction = PCA(n_components=components).fit_transform(embeddings)
+        reduction = PCA(
+            n_components=components
+        ).fit_transform(embeddings)
 
     elif algorithm == 'tsne':
         reduction = TSNE(
             n_components=components,
             perplexity=params['perplexity'],
             n_iter=params['iterations'],
-            learning_rate=params['learning_rate']
+            learning_rate=params['learning_rate'],
+            metric=params['metric'],
+            init='pca'
         ).fit_transform(embeddings)
 
     elif algorithm == 'umap':
         reduction = UMAP(
             n_components=components,
             n_neighbors=params['neighbors'],
-            min_dist=params['min_distance']
+            min_dist=params['min_distance'],
+            metric=params['metric']
+        ).fit_transform(embeddings)
+
+    elif algorithm == 'truncated_svd':
+        reduction = TruncatedSVD(
+            n_components=components,
+            algorithm='arpack'
+        ).fit_transform(embeddings)
+
+    elif algorithm == 'spectral_embedding':
+        reduction = SpectralEmbedding(
+            n_components=components
+        ).fit_transform(embeddings)
+
+    elif algorithm == 'isomap':
+        reduction = Isomap(
+            n_components=components,
+            n_neighbors=params['neighbors'],
+            metric=params['metric']
+        ).fit_transform(embeddings)
+
+    elif algorithm == 'mds':
+        reduction = MDS(
+            n_components=components
         ).fit_transform(embeddings)
 
     end_time = time.time()
@@ -126,6 +155,14 @@ def cluster(algorithm, params, experiment_id, user_id):
         # add 1 to avoid -1 as outlier cluster
         clustering += 1
 
+    # elif algorithm == 'hdbscan':
+    #     clustering = HDBSCAN(
+    #         metric=params['metric']
+    #     )
+
+    #     # add 1 to avoid -1 as outlier cluster
+    #     clustering += 1
+
     elif algorithm == 'affinity_propagation':
         clustering = AffinityPropagation().fit_predict(embeddings)
 
@@ -138,6 +175,17 @@ def cluster(algorithm, params, experiment_id, user_id):
         clustering = AgglomerativeClustering(
             n_clusters=None,
             distance_threshold=params['distance_threshold']
+        ).fit_predict(embeddings)
+
+    elif algorithm == 'spectral_clustering':
+        clustering = SpectralClustering(
+            n_clusters=params['n_clusters']
+        ).fit_predict(embeddings)
+
+    elif algorithm == 'optics':
+        clustering = OPTICS(
+            n_clusters=params['n_clusters'],
+            min_samples=params['min_samples']
         ).fit_predict(embeddings)
 
     end_time = time.time()
