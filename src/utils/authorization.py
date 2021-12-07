@@ -1,5 +1,3 @@
-import owncloud
-
 from fastapi import Header, Request, HTTPException
 from pydantic import Required
 
