@@ -81,7 +81,6 @@ def reduction(algorithm, components, params, experiment_id, user_id):
     elif algorithm == 'truncated_svd':
         reduction = TruncatedSVD(
             n_components=components,
-            algorithm='arpack'
         ).fit_transform(embeddings)
 
     elif algorithm == 'spectral_embedding':
@@ -184,9 +183,12 @@ def cluster(algorithm, params, experiment_id, user_id):
 
     elif algorithm == 'optics':
         clustering = OPTICS(
-            n_clusters=params['n_clusters'],
-            min_samples=params['min_samples']
+            min_samples=params['min_samples'],
+            metric=params['metric'],
         ).fit_predict(embeddings)
+
+        # add 1 to avoid -1 as outlier cluster
+        clustering += 1
 
     end_time = time.time()
 

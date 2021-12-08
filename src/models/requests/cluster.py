@@ -29,8 +29,8 @@ class SpectralClustering(BaseModel):
 
 
 class OPTICS(BaseModel):
-    n_clusters: int = Field(ge=1, le=100)
     min_samples: int = Field(ge=1, le=300)
+    metric: Literal['euclidean', 'cosine']
 
 
 ###############################################################################

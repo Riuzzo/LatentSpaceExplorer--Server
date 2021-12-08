@@ -6,7 +6,7 @@ from fastapi.responses import JSONResponse
 from typing import Union, List
 
 from src.celery_app import tasks
-from src.models.requests.reduction import PCAModel, TSNEModel, UMAPModel, SpectralEmbeddingModel, IsomapModel, MDSModel
+from src.models.requests.reduction import PCAModel, TSNEModel, UMAPModel, TruncatedSVDModel, SpectralEmbeddingModel, IsomapModel, MDSModel
 from src.models.responses.reduction import ReductionBaseModel, ReductionModel
 from src.models.responses.task import TaskBaseModel
 from src.models.responses.error import ErrorModel
@@ -147,7 +147,7 @@ def get_reduction(request: Request, experiment_id: str, reduction_id: str, user_
 )
 def post_reduction(
     request: Request,
-    reduction: Union[PCAModel, TSNEModel, UMAPModel, SpectralEmbeddingModel, IsomapModel, MDSModel],
+    reduction: Union[PCAModel, TSNEModel, UMAPModel, TruncatedSVDModel, SpectralEmbeddingModel, IsomapModel, MDSModel],
     experiment_id: str, user_id: dict = Depends(authorization)
 ):
     response = {}

@@ -25,7 +25,11 @@ class UMAP(BaseModel):
     metric: Literal['euclidean', 'cosine']
 
 
-class SpectralEmbeddingModel(BaseModel):
+class TruncatedSVD(BaseModel):
+    pass
+
+
+class SpectralEmbedding(BaseModel):
     pass
 
 
@@ -61,10 +65,16 @@ class UMAPModel(BaseModel):
     params: UMAP
 
 
+class TruncatedSVDModel(BaseModel):
+    algorithm: Literal['truncated_svd']
+    components: int = Field(ge=2, le=3)
+    params: TruncatedSVD
+
+
 class SpectralEmbeddingModel(BaseModel):
     algorithm: Literal['spectral_embedding']
     components: int = Field(ge=2, le=3)
-    params: SpectralEmbeddingModel
+    params: SpectralEmbedding
 
 
 class IsomapModel(BaseModel):
