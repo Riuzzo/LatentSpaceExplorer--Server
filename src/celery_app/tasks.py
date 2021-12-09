@@ -75,7 +75,8 @@ def reduction(algorithm, components, params, experiment_id, user_id):
             n_components=components,
             n_neighbors=params['neighbors'],
             min_dist=params['min_distance'],
-            metric=params['metric']
+            metric=params['metric'],
+            densmap=params['densmap']
         ).fit_transform(embeddings)
 
     elif algorithm == 'truncated_svd':
