@@ -23,6 +23,7 @@ class UMAP(BaseModel):
     neighbors: int = Field(ge=2, le=200)
     min_distance: float = Field(ge=0.01, le=0.99)
     metric: Literal['euclidean', 'cosine']
+    densmap: bool
 
 
 class TruncatedSVD(BaseModel):

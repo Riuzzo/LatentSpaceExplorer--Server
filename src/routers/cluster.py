@@ -121,7 +121,7 @@ def get_cluster(request: Request, experiment_id: str, cluster_id: str, user_id: 
     response['metadata'] = json.loads(metadata)
 
     cluster = storage.get_file(cluster_path)
-    response['cluster'] = json.loads(cluster)
+    response['groups'] = json.loads(cluster)
 
     return response
 

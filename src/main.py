@@ -9,7 +9,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 # routers
-from src.routers import experiment, reduction, cluster, task, image
+from src.routers import experiment, reduction, cluster, label, task, image
 
 # other
 from utils.storage import Storage
@@ -49,6 +49,7 @@ async def storage_middleware(request: Request, call_next):
 app.include_router(experiment.router)
 app.include_router(reduction.router)
 app.include_router(cluster.router)
+app.include_router(label.router)
 app.include_router(task.router)
 app.include_router(image.router)
 

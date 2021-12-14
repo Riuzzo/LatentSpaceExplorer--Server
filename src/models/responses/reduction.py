@@ -28,5 +28,5 @@ class ReductionBaseModel(BaseModel):
 
 class ReductionModel(BaseModel):
     metadata: Metadata
-    reduction: List[List[float]]
-    labels: List[str]
+    points: List[List[float]]
+    ids: List[str]

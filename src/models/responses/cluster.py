@@ -27,4 +27,4 @@ class ClusterBaseModel(BaseModel):
 
 class ClusterModel(BaseModel):
     metadata: Metadata
-    cluster: List[int]
+    groups: List[int]
