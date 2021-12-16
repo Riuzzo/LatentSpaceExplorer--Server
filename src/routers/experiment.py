@@ -71,22 +71,30 @@ def get_experiment(request: Request, experiment_id: str, user_id: dict = Depends
     experiment_dir = os.path.join(user_dir, experiment_id)
     metadata_path = os.path.join(experiment_dir, 'metadata.json')
 
-    if not storage.dir_exist(experiment_dir):
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Experiment id not valid"}
-        )
-
-    if not storage.file_exist(metadata_path):
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Experiment metadata file not exist"}
-        )
-
     metadata = storage.get_file(metadata_path)
-    response['metadata'] = json.loads(metadata)
 
-    return response
+    if metadata:
+        response['metadata'] = json.loads(metadata)
+        return response
+    else:
+        if not storage.dir_exist(experiment_dir):
+            return JSONResponse(
+                status_code=404,
+                content={"message": "Experiment id not valid"}
+            )
+
+        if not storage.file_exist(metadata_path):
+            return JSONResponse(
+                status_code=404,
+                content={"message": "Experiment metadata file not exist"}
+            )
+        
+        return JSONResponse(
+            status_code=404,
+            content={"message": "Something goes wrong"}
+        )
+    
+    
 
 
 @router.delete(

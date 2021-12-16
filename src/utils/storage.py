@@ -31,7 +31,11 @@ class Storage():
         return self.oc.list(dir_path, depth)
 
     def get_file(self, file_path):
-        return self.oc.get_file_contents(file_path)
+        try:
+            return self.oc.get_file_contents(file_path)
+        except owncloud.owncloud.HTTPResponseError:
+            return False
+
 
     def get_link(self, file_path):
         shares = self.oc.get_shares(file_path)
