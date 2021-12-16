@@ -9,4 +9,6 @@ result_backend = f"redis://{REDIS_HOST}:{REDIS_PORT}"
 
 result_extended = True
 
+result_expires = 600 # 10 minutes
+
 imports = ('celery_app.tasks', )
