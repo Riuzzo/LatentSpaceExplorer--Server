@@ -34,9 +34,11 @@ class Storage():
         return self.oc.get_file_contents(file_path)
 
     def get_link(self, file_path):
-        if self.oc.is_shared(file_path):
-            return self.oc.get_shares(file_path)[0].get_link()
-        return self.oc.share_file_with_link(file_path).get_link()
+        shares = self.oc.get_shares(file_path)
+        if len(shares) > 0:
+            return shares[0].get_link()
+        else:
+            return self.oc.share_file_with_link(file_path).get_link()
 
     def mkdir(self, dir_path):
         return self.oc.mkdir(dir_path)
