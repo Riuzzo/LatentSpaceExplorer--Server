@@ -16,7 +16,3 @@ class TaskModel(BaseModel):
     status: str
     name: Optional[str]
     result_id: Optional[str]
-
-
-class TaskCountModel(BaseModel):
-    count: int
