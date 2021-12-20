@@ -28,3 +28,7 @@ class ClusterBaseModel(BaseModel):
 class ClusterModel(BaseModel):
     metadata: Metadata
     groups: List[int]
+
+
+class ClusterPendingModel(BaseModel):
+    count: int

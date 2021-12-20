@@ -7,7 +7,7 @@ from typing import Union, List
 
 from src.celery_app import tasks
 from src.models.requests.cluster import DBSCANModel, AffinityPropagationModel, KMeansModel, AgglomerativeClusteringModel, SpectralClusteringModel, OPTICSModel
-from src.models.responses.cluster import ClusterBaseModel, ClusterModel
+from src.models.responses.cluster import ClusterBaseModel, ClusterModel, ClusterPendingModel
 from src.models.responses.task import TaskBaseModel
 from src.models.responses.error import ErrorModel
 
@@ -65,6 +65,32 @@ def get_clusters(request: Request, experiment_id: str, user_id: dict = Depends(a
                 metadata = storage.get_file(metadata_path)
                 clus['metadata'] = json.loads(metadata)
                 response.append(clus)
+
+    return response
+
+
+@router.get(
+    "/experiments/{experiment_id}/clusters/pending",
+    tags=["cluster"],
+    summary="Get pending clusters count",
+    response_model=ClusterPendingModel,
+)
+def get_pending_clusters_count(experiment_id: str, user_id: dict = Depends(authorization)):
+    response = {}
+    response['count'] = 0
+
+    inspector = tasks.celery.control.inspect()
+    celery_servers = inspector.active().keys()
+
+    for server_id in celery_servers:
+        server = inspector.active().get(server_id)
+
+        for task in server:
+            if 'cluster' == task['name'] and \
+                    experiment_id == task['kwargs']['experiment_id'] and \
+                    user_id == task['kwargs']['user_id']:
+
+                response['count'] += 1
 
     return response
 
@@ -153,8 +179,14 @@ def post_cluster(
             content={"message": "Experiment id not valid"}
         )
 
-    task = tasks.cluster.delay(
-        cluster.algorithm, cluster.params.dict(), experiment_id, user_id)
+    task = tasks.cluster.apply_async(
+        kwargs={
+            "algorithm": cluster.algorithm,
+            "params": cluster.params.dict(),
+            "experiment_id": experiment_id,
+            "user_id": user_id
+        }
+    )
 
     response['task_id'] = task.id
 
