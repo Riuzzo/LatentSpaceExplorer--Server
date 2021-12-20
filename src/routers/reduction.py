@@ -7,7 +7,7 @@ from typing import Union, List
 
 from src.celery_app import tasks
 from src.models.requests.reduction import PCAModel, TSNEModel, UMAPModel, TruncatedSVDModel, SpectralEmbeddingModel, IsomapModel, MDSModel
-from src.models.responses.reduction import ReductionBaseModel, ReductionModel
+from src.models.responses.reduction import ReductionBaseModel, ReductionModel, ReductionPendingModel
 from src.models.responses.task import TaskBaseModel
 from src.models.responses.error import ErrorModel
 
@@ -70,6 +70,32 @@ def get_reductions(request: Request, experiment_id: str, user_id: dict = Depends
 
 
 @router.get(
+    "/experiments/{experiment_id}/reductions/pending",
+    tags=["reduction"],
+    summary="Get pending reductions count",
+    response_model=ReductionPendingModel,
+)
+def get_pending_reductions_count(experiment_id: str, user_id: dict = Depends(authorization)):
+    response = {}
+    response['count'] = 0
+
+    inspector = tasks.celery.control.inspect()
+    celery_servers = inspector.active().keys()
+
+    for server_id in celery_servers:
+        server = inspector.active().get(server_id)
+
+        for task in server:
+            if 'reduction' == task['name'] and \
+                    experiment_id == task['kwargs']['experiment_id'] and \
+                    user_id == task['kwargs']['user_id']:
+
+                response['count'] += 1
+
+    return response
+
+
+@ router.get(
     "/experiments/{experiment_id}/reductions/{reduction_id}",
     tags=["reduction"],
     summary="Get reduction",
@@ -137,7 +163,7 @@ def get_reduction(request: Request, experiment_id: str, reduction_id: str, user_
     return response
 
 
-@router.post(
+@ router.post(
     "/experiments/{experiment_id}/reductions",
     tags=["reduction"],
     summary="Create new reduction",
@@ -162,8 +188,16 @@ def post_reduction(
             content={"message": "Experiment id not valid"}
         )
 
-    task = tasks.reduction.delay(
-        reduction.algorithm, reduction.components, reduction.params.dict(), experiment_id, user_id)
+    # task = tasks.reduction.delay(
+    task = tasks.reduction.apply_async(
+        kwargs={
+            "algorithm": reduction.algorithm,
+            "components": reduction.components,
+            "params": reduction.params.dict(),
+            "experiment_id": experiment_id,
+            "user_id": user_id
+        }
+    )
 
     response['task_id'] = task.id
 

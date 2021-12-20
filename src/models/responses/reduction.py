@@ -30,3 +30,7 @@ class ReductionModel(BaseModel):
     metadata: Metadata
     points: List[List[float]]
     ids: List[str]
+
+
+class ReductionPendingModel(BaseModel):
+    count: int
