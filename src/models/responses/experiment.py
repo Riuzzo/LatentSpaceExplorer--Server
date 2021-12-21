@@ -2,27 +2,35 @@ from pydantic import BaseModel
 from typing import Dict, List
 
 
-# params
+###############################################################################
+# Submodels
+###############################################################################
+
 
 class Preview(BaseModel):
     r: int
     g: int
     b: int
 
+
 class Channels(BaseModel):
     map: Dict
     preview: Preview
+
 
 class Image(BaseModel):
     format: str
     dim: int
     channels: Channels
 
+
 class Dataset(BaseModel):
     split_threshold: int
 
+
 class Preprocessing(BaseModel):
     normalization_type: str
+
 
 class Augmentation(BaseModel):
     threshold: int
@@ -31,10 +39,12 @@ class Augmentation(BaseModel):
     rotate: Dict
     shift: Dict
 
+
 class Architecture(BaseModel):
     name: str
     filters: List
     latent_dim: int
+
 
 class Training(BaseModel):
     epochs: int
@@ -42,7 +52,8 @@ class Training(BaseModel):
     optimizer: Dict
     loss: str
 
-class MetadataParams(BaseModel):
+
+class Metadata(BaseModel):
     name: str
     image: Image
     dataset: Dataset
@@ -51,12 +62,16 @@ class MetadataParams(BaseModel):
     architecture: Architecture
     training: Training
 
-# models
 
-class MetadataExperimentModel(BaseModel):
-    id: str
-    metadata: MetadataParams
+###############################################################################
+# Models
+###############################################################################
+
+
+class ExperimentBaseModel(BaseModel):
+    metadata: Metadata
 
 
 class ExperimentModel(BaseModel):
-    metadata: MetadataParams
+    id: str
+    metadata: Metadata

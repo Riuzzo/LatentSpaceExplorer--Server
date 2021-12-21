@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import List, Optional
 
 
 ###############################################################################
@@ -7,12 +7,7 @@ from typing import Optional
 ###############################################################################
 
 
-class TaskBaseModel(BaseModel):
-    task_id: str
-
-
-class TaskModel(BaseModel):
-    task_id: str
-    status: str
-    name: Optional[str]
-    result_id: Optional[str]
+class LabelModel(BaseModel):
+    columns: List[Optional[str]]
+    index: List[Optional[str]]
+    data: List[Optional[List]]

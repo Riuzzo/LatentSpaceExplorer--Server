@@ -9,7 +9,6 @@ from pydantic import BaseModel
 
 class Metadata(BaseModel):
     algorithm: str
-    components: int
     params: dict
     start_datetime: str
     end_datetime: str
@@ -21,16 +20,15 @@ class Metadata(BaseModel):
 ###############################################################################
 
 
-class ReductionBaseModel(BaseModel):
+class ClusterBaseModel(BaseModel):
     id: str
     metadata: Metadata
 
 
-class ReductionModel(BaseModel):
+class ClusterModel(BaseModel):
     metadata: Metadata
-    points: List[List[float]]
-    ids: List[str]
+    groups: List[int]
 
 
-class ReductionPendingModel(BaseModel):
+class ClusterPendingModel(BaseModel):
     count: int

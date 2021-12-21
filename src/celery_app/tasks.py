@@ -4,12 +4,14 @@ import json
 from dotenv import load_dotenv
 
 # reduction algorithms
-from sklearn.decomposition import PCA
-from sklearn.manifold import TSNE
+from sklearn.decomposition import PCA, TruncatedSVD
+from sklearn.manifold import TSNE, SpectralEmbedding, Isomap, MDS
 from umap import UMAP
 
 # clustering algorithm
-from sklearn.cluster import DBSCAN, AffinityPropagation, KMeans, AgglomerativeClustering
+from sklearn.cluster import DBSCAN, AffinityPropagation, KMeans, AgglomerativeClustering, SpectralClustering, OPTICS, Birch
+from sklearn.mixture import GaussianMixture
+# from hdbscan import HDBSCAN
 
 # scheduler
 from celery import Celery
@@ -43,14 +45,11 @@ def shutdown_worker(**kwargs):
 
 
 @celery.task(name="reduction")
-def reduction(algorithm, components, params, user_id, experiment_id):
-
-    # load embeddings
-    data_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
+def reduction(algorithm, components, params, experiment_id, user_id):
+    user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
 
     embeddings_path = os.path.join(
-        data_dir, experiment_id, constants.EMBEDDINGS_FILENAME)
-    #mkdir(os.path.join(data_folder, experiment_id, "provacelery2"))
+        user_dir, experiment_id, constants.EMBEDDINGS_FILENAME)
     embeddings = json.loads(storage.get_file(embeddings_path))
 
     start_time = time.time()
@@ -58,34 +57,63 @@ def reduction(algorithm, components, params, user_id, experiment_id):
     # calculate reduction
 
     if algorithm == 'pca':
-        reduction = PCA(n_components=components).fit_transform(embeddings)
+        reduction = PCA(
+            n_components=components
+        ).fit_transform(embeddings)
 
     elif algorithm == 'tsne':
         reduction = TSNE(
             n_components=components,
             perplexity=params['perplexity'],
             n_iter=params['iterations'],
-            learning_rate=params['learning_rate']
+            learning_rate=params['learning_rate'],
+            metric=params['metric'],
+            init='pca'
         ).fit_transform(embeddings)
 
     elif algorithm == 'umap':
         reduction = UMAP(
             n_components=components,
             n_neighbors=params['neighbors'],
-            min_dist=params['min_distance']
+            min_dist=params['min_distance'],
+            metric=params['metric'],
+            densmap=params['densmap']
+        ).fit_transform(embeddings)
+
+    elif algorithm == 'truncated_svd':
+        reduction = TruncatedSVD(
+            n_components=components,
+        ).fit_transform(embeddings)
+
+    elif algorithm == 'spectral_embedding':
+        reduction = SpectralEmbedding(
+            n_components=components
+        ).fit_transform(embeddings)
+
+    elif algorithm == 'isomap':
+        reduction = Isomap(
+            n_components=components,
+            n_neighbors=params['neighbors'],
+            metric=params['metric']
+        ).fit_transform(embeddings)
+
+    elif algorithm == 'mds':
+        reduction = MDS(
+            n_components=components
         ).fit_transform(embeddings)
 
     end_time = time.time()
-    #mkdir(os.path.join(data_folder, experiment_id, "provacelerydopocalcolo"))
+
     # setup result
 
     result_id = str(int(time.time()))
     result_dir = os.path.join(
-        data_dir, experiment_id, constants.REDUCTION_DIR, result_id)
+        user_dir, experiment_id, constants.REDUCTION_DIR, result_id)
 
     storage.mkdir(result_dir)
 
     # save reduction
+
     reduction_file = os.path.join(result_dir, 'reduction.json')
 
     storage.put_file(reduction_file, json.dumps(reduction.tolist()))
@@ -101,20 +129,18 @@ def reduction(algorithm, components, params, user_id, experiment_id):
         'seconds_elapsed': int(end_time - start_time)
     }
 
-    metadata_file = os.path.join(result_dir, 'metadata.json')
-    storage.put_file(metadata_file, json.dumps(metadata))
+    metadata_path = os.path.join(result_dir, 'metadata.json')
+    storage.put_file(metadata_path, json.dumps(metadata))
 
     return result_id
 
 
-@celery.task(name="clustering")
-def clustering(algorithm, params, user_id, experiment_id):
-    # load embeddings
-
-    data_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
+@celery.task(name="cluster")
+def cluster(algorithm, params, experiment_id, user_id):
+    user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
 
     embeddings_path = os.path.join(
-        data_dir, experiment_id, constants.EMBEDDINGS_FILENAME)
+        user_dir, experiment_id, constants.EMBEDDINGS_FILENAME)
     embeddings = json.loads(storage.get_file(embeddings_path))
 
     start_time = time.time()
@@ -126,8 +152,17 @@ def clustering(algorithm, params, user_id, experiment_id):
             eps=params['eps'],
             min_samples=params['min_samples']
         ).fit_predict(embeddings)
-        
+
+        # add 1 to avoid -1 as outlier cluster
         clustering += 1
+
+    # elif algorithm == 'hdbscan':
+    #     clustering = HDBSCAN(
+    #         metric=params['metric']
+    #     )
+
+    #     # add 1 to avoid -1 as outlier cluster
+    #     clustering += 1
 
     elif algorithm == 'affinity_propagation':
         clustering = AffinityPropagation().fit_predict(embeddings)
@@ -143,13 +178,36 @@ def clustering(algorithm, params, user_id, experiment_id):
             distance_threshold=params['distance_threshold']
         ).fit_predict(embeddings)
 
+    elif algorithm == 'spectral_clustering':
+        clustering = SpectralClustering(
+            n_clusters=params['n_clusters']
+        ).fit_predict(embeddings)
+
+    elif algorithm == 'optics':
+        clustering = OPTICS(
+            min_samples=params['min_samples'],
+            metric=params['metric'],
+        ).fit_predict(embeddings)
+
+    elif algorithm == 'gaussian_mixture':
+        clustering = GaussianMixture(
+            n_components=params['n_components'],
+        ).fit_predict(embeddings)
+
+    elif algorithm == 'birch':
+        clustering = Birch(
+            n_clusters=params['n_clusters'],
+        ).fit_predict(embeddings)
+
+    print(clustering)
+
     end_time = time.time()
 
     # setup result
 
     result_id = str(int(time.time()))
     result_dir = os.path.join(
-        data_dir, experiment_id, constants.CLUSTER_DIR, result_id)
+        user_dir, experiment_id, constants.CLUSTER_DIR, result_id)
 
     storage.mkdir(result_dir)
 
@@ -167,8 +225,8 @@ def clustering(algorithm, params, user_id, experiment_id):
         'end_datetime': time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(start_time)),
         'seconds_elapsed': int(end_time - start_time)
     }
-    metadata_file = os.path.join(result_dir, constants.METADATA_FILENAME)
 
-    storage.put_file(metadata_file, json.dumps(metadata))
+    metadata_path = os.path.join(result_dir, constants.METADATA_FILENAME)
+    storage.put_file(metadata_path, json.dumps(metadata))
 
     return result_id

@@ -1,13 +1,16 @@
 import os
 from dotenv import load_dotenv
+from fastapi.exceptions import HTTPException, RequestValidationError
+from fastapi.encoders import jsonable_encoder
 
 # server
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, status
+from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 # routers
-from src.routers import experiment, reduction, cluster, task, image
+from src.routers import experiment, reduction, cluster, label, task, image
 
 # other
 from utils.storage import Storage
@@ -21,8 +24,7 @@ storage = Storage(host=os.getenv('NEXCLOUD_HOST'))
 app = FastAPI(root_path=os.getenv('APP_SERVER_ROOT_PATH'))
 
 
-# middlewares
-
+# CORS middleware
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -32,23 +34,54 @@ app.add_middleware(
 )
 
 
+# storage middleware
 @app.middleware("http")
 async def storage_middleware(request: Request, call_next):
     request.state.storage = storage
-    response = await call_next(request)
-    return response
+
+    try:
+        return await call_next(request)
+
+    except HTTPException as exception:
+        return JSONResponse(status_code=exception.status_code, content=exception.detail)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content=jsonable_encoder(
+            {
+                "detail": exc.errors(),
+                "message": "An error occurred on validating the request parameters"
+            }
+        ),
+    )
+
+
+@app.exception_handler(ValueError)
+async def value_error_exception_handler(request: Request, exc: ValueError):
+    return JSONResponse(
+        status_code=500,
+        content=jsonable_encoder(
+            {
+                "detail": exc.errors(),
+                "message": "Internal Server Error"
+            }
+        )
+    )
 
 
 # routers
 app.include_router(experiment.router)
 app.include_router(reduction.router)
 app.include_router(cluster.router)
+app.include_router(label.router)
 app.include_router(task.router)
 app.include_router(image.router)
 
 
-# events
-
+# startup event
 @app.on_event("startup")
 async def startup():
     storage.connect(
@@ -57,6 +90,7 @@ async def startup():
     )
 
 
+# shutdown event
 @app.on_event("shutdown")
 async def shutdown():
     storage.disconnect()
