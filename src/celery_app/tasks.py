@@ -9,7 +9,8 @@ from sklearn.manifold import TSNE, SpectralEmbedding, Isomap, MDS
 from umap import UMAP
 
 # clustering algorithm
-from sklearn.cluster import DBSCAN, AffinityPropagation, KMeans, AgglomerativeClustering, SpectralClustering, OPTICS
+from sklearn.cluster import DBSCAN, AffinityPropagation, KMeans, AgglomerativeClustering, SpectralClustering, OPTICS, Birch
+from sklearn.mixture import GaussianMixture
 # from hdbscan import HDBSCAN
 
 # scheduler
@@ -188,8 +189,17 @@ def cluster(algorithm, params, experiment_id, user_id):
             metric=params['metric'],
         ).fit_predict(embeddings)
 
-        # add 1 to avoid -1 as outlier cluster
-        clustering += 1
+    elif algorithm == 'gaussian_mixture':
+        clustering = GaussianMixture(
+            n_components=params['n_components'],
+        ).fit_predict(embeddings)
+
+    elif algorithm == 'birch':
+        clustering = Birch(
+            n_clusters=params['n_clusters'],
+        ).fit_predict(embeddings)
+
+    print(clustering)
 
     end_time = time.time()
 

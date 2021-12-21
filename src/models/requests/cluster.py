@@ -33,6 +33,14 @@ class OPTICS(BaseModel):
     metric: Literal['euclidean', 'cosine']
 
 
+class GaussianMixture(BaseModel):
+    n_components: int = Field(ge=1, le=100)
+
+
+class Birch(BaseModel):
+    n_clusters: int = Field(ge=1, le=100)
+
+
 ###############################################################################
 # Models
 ###############################################################################
@@ -66,3 +74,13 @@ class SpectralClusteringModel(BaseModel):
 class OPTICSModel(BaseModel):
     algorithm: Literal['optics']
     params: OPTICS
+
+
+class GaussianMixtureModel(BaseModel):
+    algorithm: Literal['gaussian_mixture']
+    params: GaussianMixture
+
+
+class BirchModel(BaseModel):
+    algorithm: Literal['birch']
+    params: Birch
