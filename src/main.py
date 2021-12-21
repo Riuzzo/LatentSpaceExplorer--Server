@@ -1,10 +1,12 @@
 import os
 from dotenv import load_dotenv
 from fastapi.exceptions import HTTPException
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 
 # server
 import uvicorn
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -43,6 +45,19 @@ async def storage_middleware(request: Request, call_next):
 
     except HTTPException as exception:
         return JSONResponse(status_code=exception.status_code, content=exception.detail)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content=jsonable_encoder(
+            {
+                "detail": exc.errors(),
+                "message": "An error occurred on validating the request parameters"
+            }
+        ),
+    )
 
 
 # routers
