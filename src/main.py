@@ -1,8 +1,7 @@
 import os
 from dotenv import load_dotenv
-from fastapi.exceptions import HTTPException
+from fastapi.exceptions import HTTPException, RequestValidationError
 from fastapi.encoders import jsonable_encoder
-from fastapi.exceptions import RequestValidationError
 
 # server
 import uvicorn
@@ -57,6 +56,19 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
                 "message": "An error occurred on validating the request parameters"
             }
         ),
+    )
+
+
+@app.exception_handler(ValueError)
+async def value_error_exception_handler(request: Request, exc: ValueError):
+    return JSONResponse(
+        status_code=500,
+        content=jsonable_encoder(
+            {
+                "detail": exc.errors(),
+                "message": "Internal Server Error"
+            }
+        )
     )
 
 
