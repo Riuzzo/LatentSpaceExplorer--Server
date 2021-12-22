@@ -15,8 +15,6 @@ spec:
       containers:
         - name: celery
           image: gitlab.neanias.eu:5050/s3-service/latent-space-explorer/server/celery:v0.0.5-staging
-          command: ["celery"]
-          args: ["-A", "celery_app.tasks.celery", "worker", "--loglevel=warning"]
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
