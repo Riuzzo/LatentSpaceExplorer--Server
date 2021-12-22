@@ -1,0 +1,18 @@
+FROM tiangolo/uvicorn-gunicorn:python3.8-slim
+
+RUN pip install --upgrade pip
+
+#RUN mkdir /app
+WORKDIR /app
+RUN rm /app/*
+
+COPY requirements.txt /app
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY ./src/celery_app /app/src/celery_app
+COPY ./src/utils /app/src/utils
+COPY ./src/.env* /app/src/
+
+WORKDIR /app/src
+
+ENV ENVIRONMENT production
