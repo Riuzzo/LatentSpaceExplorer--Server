@@ -16,3 +16,5 @@ COPY ./src/.env* /app/src/
 WORKDIR /app/src
 
 ENV ENVIRONMENT local
+
+CMD ["celery", "-A", "celery_app.tasks.celery", "worker"]
