@@ -8,7 +8,7 @@ from typing import Literal
 
 
 class DBSCAN(BaseModel):
-    eps: float = Field(ge=0.1, le=1)
+    eps: float = Field(ge=0.01, le=1)
     min_samples: int = Field(ge=1, le=300)
 
 
