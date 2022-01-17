@@ -16,7 +16,8 @@ class Storage():
             file = self.oc.file_info(file_path)
             return file.file_type == 'file'
 
-        except owncloud.owncloud.HTTPResponseError:
+        except Exception as exception:
+            print('storage exception:\n\t{}\n\t{}'.format(exception, file_path))
             return False
 
     def dir_exist(self, dir_path):
@@ -24,7 +25,8 @@ class Storage():
             dir = self.oc.file_info(dir_path)
             return dir.file_type == 'dir'
 
-        except owncloud.owncloud.HTTPResponseError:
+        except Exception as exception:
+            print('storage exception:\n\t{}\n\t{}'.format(exception, dir_path))
             return False
 
     def list(self, dir_path, depth=1):
