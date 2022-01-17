@@ -20,7 +20,6 @@ router = APIRouter()
     response_model=AnyHttpUrl,
     responses={
         404: {
-            "description": "Item not found",
             "model": ErrorModel
         }
     }
@@ -29,8 +28,9 @@ def get_single_image(image_name: str, experiment_id: str, request: Request, user
     storage = request.state.storage
 
     data_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-    path = os.path.join(data_dir, experiment_id, constants.IMAGES_DIR, image_name)
-    
+    path = os.path.join(data_dir, experiment_id,
+                        constants.IMAGES_DIR, image_name)
+
     try:
         link = storage.get_link(path)
 
@@ -39,5 +39,5 @@ def get_single_image(image_name: str, experiment_id: str, request: Request, user
             status_code=404,
             content={"message": "The image doesn't exist"}
         )
-    
+
     return '{}{}'.format(link, "/preview")

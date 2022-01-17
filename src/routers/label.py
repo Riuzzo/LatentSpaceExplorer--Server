@@ -21,7 +21,6 @@ router = APIRouter()
     response_model=LabelModel,
     responses={
         404: {
-            "description": "Label not found",
             "model": ErrorModel
         }
     }

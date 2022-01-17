@@ -25,7 +25,6 @@ router = APIRouter()
     response_model=List[ReductionBaseModel],
     responses={
         404: {
-            "description": "Reduction not found",
             "model": ErrorModel
         }
     }
@@ -80,12 +79,12 @@ def get_pending_reductions_count(experiment_id: str, user_id: dict = Depends(aut
     response['count'] = 0
 
     inspector = tasks.celery.control.inspect()
-    celery_servers = inspector.active().keys()
+    workers = inspector.active().keys()
 
-    for server_id in celery_servers:
-        server = inspector.active().get(server_id)
+    for worker_id in workers:
+        worker = inspector.active().get(worker_id)
 
-        for task in server:
+        for task in worker:
             if 'reduction' == task['name'] and \
                     experiment_id == task['kwargs']['experiment_id'] and \
                     user_id == task['kwargs']['user_id']:
@@ -95,14 +94,13 @@ def get_pending_reductions_count(experiment_id: str, user_id: dict = Depends(aut
     return response
 
 
-@ router.get(
+@router.get(
     "/experiments/{experiment_id}/reductions/{reduction_id}",
     tags=["reduction"],
     summary="Get reduction",
     response_model=ReductionModel,
     responses={
         404: {
-            "description": "Reduction not found",
             "model": ErrorModel
         }
     }
@@ -163,7 +161,7 @@ def get_reduction(request: Request, experiment_id: str, reduction_id: str, user_
     return response
 
 
-@ router.post(
+@router.post(
     "/experiments/{experiment_id}/reductions",
     tags=["reduction"],
     summary="Create new reduction",
@@ -181,6 +179,7 @@ def post_reduction(
     user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
 
     experiment_dir = os.path.join(user_dir, experiment_id)
+    reductions_dir = os.path.join(experiment_dir, constants.REDUCTION_DIR)
 
     if not storage.dir_exist(experiment_dir):
         return JSONResponse(
@@ -188,7 +187,12 @@ def post_reduction(
             content={"message": "Experiment id not valid"}
         )
 
-    # task = tasks.reduction.delay(
+    if not storage.dir_exist(reductions_dir):
+        return JSONResponse(
+            status_code=404,
+            content={"message": "Reductions dir not valid"}
+        )
+
     task = tasks.reduction.apply_async(
         kwargs={
             "algorithm": reduction.algorithm,
@@ -209,11 +213,7 @@ def post_reduction(
     tags=["reduction"],
     summary="Delete reduction",
     responses={
-        200: {
-            "description": "Reduction deleted",
-        },
         404: {
-            "description": "Reduction not found",
             "model": ErrorModel
         }
     }
@@ -230,15 +230,13 @@ def delete_reduction(request: Request, experiment_id: str, reduction_id: str, us
     if not storage.dir_exist(experiment_dir):
         return JSONResponse(
             status_code=404,
-            content={
-                "message": "Experiment id not valid"}
+            content={"message": "Experiment id not valid"}
         )
 
     if not storage.dir_exist(reduction_dir):
         return JSONResponse(
             status_code=404,
-            content={
-                "message": "Reduction id not valid"}
+            content={"message": "Reduction id not valid"}
         )
 
     storage.delete(reduction_dir)
