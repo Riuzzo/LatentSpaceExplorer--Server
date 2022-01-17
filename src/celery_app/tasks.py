@@ -11,7 +11,7 @@ from umap import UMAP
 # clustering algorithm
 from sklearn.cluster import DBSCAN, AffinityPropagation, KMeans, AgglomerativeClustering, SpectralClustering, OPTICS, Birch
 from sklearn.mixture import GaussianMixture
-# from hdbscan import HDBSCAN
+from sklearn.metrics import silhouette_samples
 
 # scheduler
 from celery import Celery
@@ -19,7 +19,7 @@ from celery.signals import worker_process_init, worker_process_shutdown
 from src.celery_app import celeryconfig
 
 import src.utils.constants as constants
-from utils.storage import Storage
+from src.utils.storage import Storage
 
 
 celery = Celery()
@@ -145,61 +145,56 @@ def cluster(algorithm, params, experiment_id, user_id):
 
     start_time = time.time()
 
-    # calculate clustering
+    # calculate clusters
 
     if algorithm == 'dbscan':
-        clustering = DBSCAN(
+        clusters = DBSCAN(
             eps=params['eps'],
             min_samples=params['min_samples']
         ).fit_predict(embeddings)
 
-        # add 1 to avoid -1 as outlier cluster
-        clustering += 1
-
-    # elif algorithm == 'hdbscan':
-    #     clustering = HDBSCAN(
-    #         metric=params['metric']
-    #     )
-
-    #     # add 1 to avoid -1 as outlier cluster
-    #     clustering += 1
-
     elif algorithm == 'affinity_propagation':
-        clustering = AffinityPropagation().fit_predict(embeddings)
+        clusters = AffinityPropagation().fit_predict(embeddings)
 
     elif algorithm == 'kmeans':
-        clustering = KMeans(
+        clusters = KMeans(
             n_clusters=params['n_clusters']
         ).fit_predict(embeddings)
 
     elif algorithm == 'agglomerative_clustering':
-        clustering = AgglomerativeClustering(
+        clusters = AgglomerativeClustering(
             n_clusters=None,
             distance_threshold=params['distance_threshold']
         ).fit_predict(embeddings)
 
     elif algorithm == 'spectral_clustering':
-        clustering = SpectralClustering(
+        clusters = SpectralClustering(
             n_clusters=params['n_clusters']
         ).fit_predict(embeddings)
 
     elif algorithm == 'optics':
-        clustering = OPTICS(
+        clusters = OPTICS(
             min_samples=params['min_samples'],
             metric=params['metric'],
         ).fit_predict(embeddings)
 
     elif algorithm == 'gaussian_mixture':
-        clustering = GaussianMixture(
+        clusters = GaussianMixture(
             n_components=params['n_components'],
         ).fit_predict(embeddings)
 
     elif algorithm == 'birch':
-        clustering = Birch(
+        clusters = Birch(
             n_clusters=params['n_clusters'],
         ).fit_predict(embeddings)
 
-    print(clustering)
+    # calculate silhouettes
+
+    if 2 <= len(set(clusters)) <= len(embeddings) - 1:
+        silhouettes = silhouette_samples(embeddings, clusters)
+        silhouettes = silhouettes.tolist()
+    else:
+        silhouettes = []
 
     end_time = time.time()
 
@@ -214,7 +209,10 @@ def cluster(algorithm, params, experiment_id, user_id):
     # save clustering
 
     cluster_file = os.path.join(result_dir, constants.CLUSTER_FILENAME)
-    storage.put_file(cluster_file, json.dumps(clustering.tolist()))
+    storage.put_file(cluster_file, json.dumps(clusters.tolist()))
+
+    silhouette_file = os.path.join(result_dir, constants.SILHOUETTE_FILENAME)
+    storage.put_file(silhouette_file, json.dumps(silhouettes))
 
     # save metadata
 

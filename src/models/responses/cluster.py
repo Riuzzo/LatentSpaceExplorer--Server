@@ -28,6 +28,7 @@ class ClusterBaseModel(BaseModel):
 class ClusterModel(BaseModel):
     metadata: Metadata
     groups: List[int]
+    silhouettes: List[float]
 
 
 class ClusterPendingModel(BaseModel):
