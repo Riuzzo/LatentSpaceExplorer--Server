@@ -82,9 +82,10 @@ def get_pending_clusters_count(experiment_id: str, user_id: dict = Depends(autho
     workers = inspector.active().keys()
 
     for worker_id in workers:
-        worker = inspector.active().get(worker_id)
+        active = inspector.active().get(worker_id)
+        reserved = inspector.reserved().get(worker_id)
 
-        for task in worker:
+        for task in active + reserved:
             if 'cluster' == task['name'] and \
                     experiment_id == task['kwargs']['experiment_id'] and \
                     user_id == task['kwargs']['user_id']:
