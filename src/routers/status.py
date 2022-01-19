@@ -4,9 +4,8 @@ import redis
 from fastapi import APIRouter
 
 from src.celery_app.tasks import celery
-from src.models.responses.task import TaskModel
+from src.models.responses.status import StatusModel
 
-from celery.states import state, SUCCESS
 
 router = APIRouter()
 
@@ -15,7 +14,7 @@ router = APIRouter()
     "/status",
     tags=["status"],
     summary="Get task",
-    # response_model=TaskModel
+    response_model=StatusModel
 )
 def get_status():
     response = {}
