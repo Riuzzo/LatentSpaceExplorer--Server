@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 # routers
-from src.routers import experiment, reduction, cluster, label, task, image
+from src.routers import experiment, reduction, cluster, label, task, image, status
 
 # other
 from src.utils.storage import Storage
@@ -111,6 +111,7 @@ app.include_router(cluster.router)
 app.include_router(label.router)
 app.include_router(task.router)
 app.include_router(image.router)
+app.include_router(status.router)
 
 
 # startup event
