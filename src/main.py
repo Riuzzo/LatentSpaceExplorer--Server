@@ -26,15 +26,15 @@ app = FastAPI(root_path=os.getenv('APP_SERVER_ROOT_PATH'))
 
 
 # CORS middleware
-origins = [
-    "http://lse.local",
-    "https://lse.staging.neanias.eu",
-    "https://lse.neanias.eu"
-]
+# origins = [
+#     "http://lse.local",
+#     "https://lse.staging.neanias.eu",
+#     "https://lse.neanias.eu"
+# ]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
