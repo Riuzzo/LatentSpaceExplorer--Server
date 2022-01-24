@@ -68,7 +68,7 @@ def reduction(algorithm, components, params, experiment_id, user_id):
             n_iter=params['iterations'],
             learning_rate=params['learning_rate'],
             metric=params['metric'],
-            init='pca'
+            init=params['init']
         ).fit_transform(embeddings)
 
     elif algorithm == 'umap':
@@ -87,7 +87,8 @@ def reduction(algorithm, components, params, experiment_id, user_id):
 
     elif algorithm == 'spectral_embedding':
         reduction = SpectralEmbedding(
-            n_components=components
+            n_components=components,
+            affinity=params['affinity']
         ).fit_transform(embeddings)
 
     elif algorithm == 'isomap':
@@ -150,7 +151,8 @@ def cluster(algorithm, params, experiment_id, user_id):
     if algorithm == 'dbscan':
         clusters = DBSCAN(
             eps=params['eps'],
-            min_samples=params['min_samples']
+            min_samples=params['min_samples'],
+            metric=params['metric']
         ).fit_predict(embeddings)
 
     elif algorithm == 'affinity_propagation':
@@ -164,28 +166,36 @@ def cluster(algorithm, params, experiment_id, user_id):
     elif algorithm == 'agglomerative_clustering':
         clusters = AgglomerativeClustering(
             n_clusters=None,
-            distance_threshold=params['distance_threshold']
+            distance_threshold=params['distance_threshold'],
+            affinity=params['affininty'],
+            linkage=params['linkage']
         ).fit_predict(embeddings)
 
     elif algorithm == 'spectral_clustering':
         clusters = SpectralClustering(
-            n_clusters=params['n_clusters']
+            n_clusters=params['n_clusters'],
+            affinity=params['affinity'],
+            n_neighbors=params['neighbors']
         ).fit_predict(embeddings)
 
     elif algorithm == 'optics':
         clusters = OPTICS(
             min_samples=params['min_samples'],
             metric=params['metric'],
+            cluster_method=params['cluster_method'],
+            min_cluster_size=params['min_cluster_size']
         ).fit_predict(embeddings)
 
     elif algorithm == 'gaussian_mixture':
         clusters = GaussianMixture(
             n_components=params['n_components'],
+            init_params=params['init_params'],
         ).fit_predict(embeddings)
 
     elif algorithm == 'birch':
         clusters = Birch(
             n_clusters=params['n_clusters'],
+            threshold=params['threshold']
         ).fit_predict(embeddings)
 
     # calculate silhouettes
