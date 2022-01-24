@@ -117,7 +117,7 @@ def get_reduction(request: Request, experiment_id: str, reduction_id: str, user_
         experiment_dir, constants.REDUCTION_DIR, reduction_id)
     metadata_path = os.path.join(reduction_dir, constants.METADATA_FILENAME)
     reduction_path = os.path.join(reduction_dir, constants.REDUCTION_FILENAME)
-    ids_path = os.path.join(experiment_dir, constants.IDS_FILENAME)
+    labels_path = os.path.join(experiment_dir, constants.LABELS_FILENAME)
 
     if not storage.dir_exist(experiment_dir):
         return JSONResponse(
@@ -143,7 +143,7 @@ def get_reduction(request: Request, experiment_id: str, reduction_id: str, user_
             content={"message": "Reduction file not exist"}
         )
 
-    if not storage.file_exist(ids_path):
+    if not storage.file_exist(labels_path):
         return JSONResponse(
             status_code=404,
             content={"message": "Reduction label file not exist"}
@@ -155,9 +155,9 @@ def get_reduction(request: Request, experiment_id: str, reduction_id: str, user_
     reduction = storage.get_file(reduction_path)
     response['points'] = json.loads(reduction)
 
-    ids = storage.get_file(ids_path)
-    ids = json.loads(ids)
-    response['ids'] = ids
+    labels = storage.get_file(labels_path)
+    labels = json.loads(labels)
+    response['ids'] = labels['columns']
 
     return response
 

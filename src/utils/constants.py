@@ -2,7 +2,6 @@ NEXTCLOUD_PREFIX_USER_DIR = 'lse-'
 
 EMBEDDINGS_FILENAME = 'embeddings.json'
 METADATA_FILENAME = 'metadata.json'
-IDS_FILENAME = 'ids.json'
 LABELS_FILENAME = 'labels.json'
 REDUCTION_FILENAME = 'reduction.json'
 CLUSTER_FILENAME = 'cluster.json'
