@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: celery
-          image: gitlab.neanias.eu:5050/s3-service/latent-space-explorer/server/celery:v0.0.5-staging
+          image: gitlab.neanias.eu:5050/s3-service/latent-space-explorer/server/celery:v0.0.6-staging
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
