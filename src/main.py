@@ -5,7 +5,8 @@ from fastapi.encoders import jsonable_encoder
 
 # server
 import uvicorn
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request
+from fastapi import status as HTTPCodes
 from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -66,7 +67,7 @@ async def storage_middleware(request: Request, call_next):
 async def authorizatrion_handler(request: Request, exc: AuthError):
     print('authorizatrion middleware:\n\t{}'.format(exc.user_id))
     return JSONResponse(
-        status_code=status.HTTP_401_UNAUTHORIZED,
+        status_code=HTTPCodes.HTTP_401_UNAUTHORIZED,
         content=jsonable_encoder(
             {
                 "detail": "The user id {} not exist".format(exc.user_id),
@@ -80,7 +81,7 @@ async def authorizatrion_handler(request: Request, exc: AuthError):
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     print('validation middleware:\n\t{}'.format(exc.errors()))
     return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        status_code=HTTPCodes.HTTP_422_UNPROCESSABLE_ENTITY,
         content=jsonable_encoder(
             {
                 "detail": exc.errors(),
