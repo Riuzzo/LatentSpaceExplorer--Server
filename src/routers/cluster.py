@@ -25,7 +25,6 @@ router = APIRouter()
     response_model=List[ClusterBaseModel],
     responses={
         404: {
-            "description": "Cluster not found",
             "model": ErrorModel
         }
     }
@@ -80,12 +79,13 @@ def get_pending_clusters_count(experiment_id: str, user_id: dict = Depends(autho
     response['count'] = 0
 
     inspector = tasks.celery.control.inspect()
-    celery_servers = inspector.active().keys()
+    workers = inspector.active().keys()
 
-    for server_id in celery_servers:
-        server = inspector.active().get(server_id)
+    for worker_id in workers:
+        active = inspector.active().get(worker_id)
+        reserved = inspector.reserved().get(worker_id)
 
-        for task in server:
+        for task in active + reserved:
             if 'cluster' == task['name'] and \
                     experiment_id == task['kwargs']['experiment_id'] and \
                     user_id == task['kwargs']['user_id']:
@@ -102,7 +102,6 @@ def get_pending_clusters_count(experiment_id: str, user_id: dict = Depends(autho
     response_model=ClusterModel,
     responses={
         404: {
-            "description": "Cluster not found",
             "model": ErrorModel
         }
     }
@@ -118,6 +117,8 @@ def get_cluster(request: Request, experiment_id: str, cluster_id: str, user_id: 
         experiment_dir, constants.CLUSTER_DIR, cluster_id)
     metadata_path = os.path.join(cluster_dir, constants.METADATA_FILENAME)
     cluster_path = os.path.join(cluster_dir, constants.CLUSTER_FILENAME)
+    silhouette_path = os.path.join(cluster_dir, constants.SILHOUETTE_FILENAME)
+    scores_path = os.path.join(cluster_dir, constants.SCORES_FILENAME)
 
     if not storage.dir_exist(experiment_dir):
         return JSONResponse(
@@ -143,11 +144,29 @@ def get_cluster(request: Request, experiment_id: str, cluster_id: str, user_id: 
             content={"message": "Cluster file not exist"}
         )
 
+    if not storage.file_exist(silhouette_path):
+        return JSONResponse(
+            status_code=404,
+            content={"message": "Cluster silhouette file not exist"}
+        )
+
+    if not storage.file_exist(scores_path):
+        return JSONResponse(
+            status_code=404,
+            content={"message": "Cluster scores file not exist"}
+        )
+
     metadata = storage.get_file(metadata_path)
     response['metadata'] = json.loads(metadata)
 
     cluster = storage.get_file(cluster_path)
     response['groups'] = json.loads(cluster)
+
+    silohuette = storage.get_file(silhouette_path)
+    response['silhouettes'] = json.loads(silohuette)
+
+    scores = storage.get_file(scores_path)
+    response['scores'] = json.loads(scores)
 
     return response
 
@@ -172,11 +191,18 @@ def post_cluster(
     user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
 
     experiment_dir = os.path.join(user_dir, experiment_id)
+    clusters_dir = os.path.join(experiment_dir, constants.CLUSTER_DIR)
 
     if not storage.dir_exist(experiment_dir):
         return JSONResponse(
             status_code=404,
             content={"message": "Experiment id not valid"}
+        )
+
+    if not storage.dir_exist(clusters_dir):
+        return JSONResponse(
+            status_code=404,
+            content={"message": "Clusters dir not valid"}
         )
 
     task = tasks.cluster.apply_async(
@@ -198,11 +224,7 @@ def post_cluster(
     tags=["cluster"],
     summary="Delete cluster",
     responses={
-        200: {
-            "description": "Cluster deleted",
-        },
         404: {
-            "description": "Cluster not found",
             "model": ErrorModel
         }
     }
@@ -219,15 +241,13 @@ def delete_cluster(request: Request, experiment_id: str, cluster_id: str, user_i
     if not storage.dir_exist(experiment_dir):
         return JSONResponse(
             status_code=404,
-            content={
-                "message": "Experiment id not valid"}
+            content={"message": "Experiment id not valid"}
         )
 
     if not storage.dir_exist(cluster_dir):
         return JSONResponse(
             status_code=404,
-            content={
-                "message": "Cluster id not valid"}
+            content={"message": "Cluster id not valid"}
         )
 
     storage.delete(cluster_dir)

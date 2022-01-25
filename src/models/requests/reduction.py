@@ -15,14 +15,16 @@ class TSNE(BaseModel):
     perplexity: int = Field(ge=5, le=50)
     iterations: int = Field(ge=250, le=5000)
     learning_rate: int = Field(ge=10, le=1000)
-    metric: Literal['euclidean', 'cosine']
+    metric: Literal['euclidean', 'cosine', 'minkowski',
+                    'manhattan', 'chebyshev', 'canberra', 'mahalanobis']
     init: Literal['random', 'pca']
 
 
 class UMAP(BaseModel):
     neighbors: int = Field(ge=2, le=200)
     min_distance: float = Field(ge=0.01, le=0.99)
-    metric: Literal['euclidean', 'cosine']
+    metric: Literal['euclidean', 'cosine', 'minkowski',
+                    'manhattan', 'chebyshev', 'canberra', 'mahalanobis']
     densmap: bool
 
 
@@ -31,12 +33,13 @@ class TruncatedSVD(BaseModel):
 
 
 class SpectralEmbedding(BaseModel):
-    pass
+    affinity: Literal['nearest_neighbors', 'rbf']
 
 
 class Isomap(BaseModel):
     neighbors: int = Field(ge=2, le=200)
-    metric: Literal['euclidean', 'cosine']
+    metric: Literal['euclidean', 'cosine', 'minkowski',
+                    'manhattan', 'chebyshev', 'canberra', 'mahalanobis']
 
 
 class MDS(BaseModel):

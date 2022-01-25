@@ -8,8 +8,10 @@ from typing import Literal
 
 
 class DBSCAN(BaseModel):
-    eps: float = Field(ge=0.1, le=1)
+    eps: float = Field(ge=0.01, le=10)
     min_samples: int = Field(ge=1, le=300)
+    metric: Literal['euclidean', 'cosine', 'minkowski',
+                    'manhattan', 'chebyshev', 'canberra', 'mahalanobis']
 
 
 class AffinityPropagation(BaseModel):
@@ -22,23 +24,32 @@ class KMeans(BaseModel):
 
 class AgglomerativeClustering(BaseModel):
     distance_threshold: int = Field(ge=1, le=100)
+    affinity: Literal['euclidean', 'cosine', 'manhattan']
+    linkage: Literal['ward', 'complete', 'average', 'single']
 
 
 class SpectralClustering(BaseModel):
     n_clusters: int = Field(ge=1, le=100)
+    affinity: Literal['nearest_neighbors', 'rbf']
+    n_neighbors: int = Field(ge=1, le=100)
 
 
 class OPTICS(BaseModel):
     min_samples: int = Field(ge=1, le=300)
-    metric: Literal['euclidean', 'cosine']
+    metric: Literal['euclidean', 'cosine', 'minkowski',
+                    'manhattan', 'chebyshev', 'canberra', 'mahalanobis']
+    cluster_method: Literal['xi', 'dbscan']
+    min_cluster_size: float = Field(ge=0, le=1)
 
 
 class GaussianMixture(BaseModel):
     n_components: int = Field(ge=1, le=100)
+    init_params: Literal['kmeans', 'random']
 
 
 class Birch(BaseModel):
     n_clusters: int = Field(ge=1, le=100)
+    threshold: float = Field(ge=0.1, le=1)
 
 
 ###############################################################################

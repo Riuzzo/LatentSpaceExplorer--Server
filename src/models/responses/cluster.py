@@ -15,6 +15,11 @@ class Metadata(BaseModel):
     seconds_elapsed: int
 
 
+class Scores(BaseModel):
+    calinski_harabasz_score: float
+    davies_bouldin_score: float
+
+
 ###############################################################################
 # Models
 ###############################################################################
@@ -28,6 +33,8 @@ class ClusterBaseModel(BaseModel):
 class ClusterModel(BaseModel):
     metadata: Metadata
     groups: List[int]
+    silhouettes: List[float]
+    scores: Scores
 
 
 class ClusterPendingModel(BaseModel):
