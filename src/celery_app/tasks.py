@@ -11,7 +11,7 @@ from umap import UMAP
 # clustering algorithm
 from sklearn.cluster import DBSCAN, AffinityPropagation, KMeans, AgglomerativeClustering, SpectralClustering, OPTICS, Birch
 from sklearn.mixture import GaussianMixture
-from sklearn.metrics import silhouette_samples
+from sklearn.metrics import silhouette_samples, calinski_harabasz_score, davies_bouldin_score
 
 # scheduler
 from celery import Celery
@@ -167,7 +167,7 @@ def cluster(algorithm, params, experiment_id, user_id):
         clusters = AgglomerativeClustering(
             n_clusters=None,
             distance_threshold=params['distance_threshold'],
-            affinity=params['affininty'],
+            affinity=params['affinity'],
             linkage=params['linkage']
         ).fit_predict(embeddings)
 
@@ -179,6 +179,9 @@ def cluster(algorithm, params, experiment_id, user_id):
         ).fit_predict(embeddings)
 
     elif algorithm == 'optics':
+        if params['min_cluster_size'] == 0:
+            params['min_cluster_size'] = None
+
         clusters = OPTICS(
             min_samples=params['min_samples'],
             metric=params['metric'],
@@ -200,11 +203,19 @@ def cluster(algorithm, params, experiment_id, user_id):
 
     # calculate silhouettes
 
+    silhouettes = []
     if 2 <= len(set(clusters)) <= len(embeddings) - 1:
         silhouettes = silhouette_samples(embeddings, clusters)
         silhouettes = silhouettes.tolist()
-    else:
-        silhouettes = []
+
+    # calculate scores
+
+    scores = {}
+    if 2 <= len(set(clusters)) <= len(embeddings) - 1:
+        scores = {
+            'calinski_harabasz_score': calinski_harabasz_score(embeddings, clusters),
+            'davies_bouldin_score': davies_bouldin_score(embeddings, clusters)
+        }
 
     end_time = time.time()
 
@@ -223,6 +234,9 @@ def cluster(algorithm, params, experiment_id, user_id):
 
     silhouette_file = os.path.join(result_dir, constants.SILHOUETTE_FILENAME)
     storage.put_file(silhouette_file, json.dumps(silhouettes))
+
+    scores_file = os.path.join(result_dir, constants.SCORES_FILENAME)
+    storage.put_file(scores_file, json.dumps(scores))
 
     # save metadata
 

@@ -118,6 +118,7 @@ def get_cluster(request: Request, experiment_id: str, cluster_id: str, user_id: 
     metadata_path = os.path.join(cluster_dir, constants.METADATA_FILENAME)
     cluster_path = os.path.join(cluster_dir, constants.CLUSTER_FILENAME)
     silhouette_path = os.path.join(cluster_dir, constants.SILHOUETTE_FILENAME)
+    scores_path = os.path.join(cluster_dir, constants.SCORES_FILENAME)
 
     if not storage.dir_exist(experiment_dir):
         return JSONResponse(
@@ -143,6 +144,18 @@ def get_cluster(request: Request, experiment_id: str, cluster_id: str, user_id: 
             content={"message": "Cluster file not exist"}
         )
 
+    if not storage.file_exist(silhouette_path):
+        return JSONResponse(
+            status_code=404,
+            content={"message": "Cluster silhouette file not exist"}
+        )
+
+    if not storage.file_exist(scores_path):
+        return JSONResponse(
+            status_code=404,
+            content={"message": "Cluster scores file not exist"}
+        )
+
     metadata = storage.get_file(metadata_path)
     response['metadata'] = json.loads(metadata)
 
@@ -151,6 +164,9 @@ def get_cluster(request: Request, experiment_id: str, cluster_id: str, user_id: 
 
     silohuette = storage.get_file(silhouette_path)
     response['silhouettes'] = json.loads(silohuette)
+
+    scores = storage.get_file(scores_path)
+    response['scores'] = json.loads(scores)
 
     return response
 

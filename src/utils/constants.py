@@ -6,6 +6,7 @@ LABELS_FILENAME = 'labels.json'
 REDUCTION_FILENAME = 'reduction.json'
 CLUSTER_FILENAME = 'cluster.json'
 SILHOUETTE_FILENAME = 'silhouette.json'
+SCORES_FILENAME = 'scores.json'
 
 IMAGES_DIR = 'images'
 REDUCTION_DIR = 'reductions'

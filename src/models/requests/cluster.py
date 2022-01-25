@@ -39,7 +39,7 @@ class OPTICS(BaseModel):
     metric: Literal['euclidean', 'cosine', 'minkowski',
                     'manhattan', 'chebyshev', 'canberra', 'mahalanobis']
     cluster_method: Literal['xi', 'dbscan']
-    min_cluster_size: float = Field(ge=0.01, le=1)
+    min_cluster_size: float = Field(ge=0, le=1)
 
 
 class GaussianMixture(BaseModel):
