@@ -34,36 +34,40 @@ def get_reductions(request: Request, experiment_id: str, user_id: dict = Depends
     storage = request.state.storage
 
     user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-
     experiment_dir = os.path.join(user_dir, experiment_id)
     reductions_dir = os.path.join(experiment_dir, constants.REDUCTION_DIR)
 
-    if not storage.dir_exist(experiment_dir):
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Experiment id not valid"}
-        )
+    reductions = []
 
-    if not storage.dir_exist(reductions_dir):
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Reductions dir not valid"}
-        )
+    try:
+        reductions = storage.list(reductions_dir, depth=2)
 
-    reductions = storage.list(reductions_dir)
+    except:
+        if not storage.dir_exist(experiment_dir):
+            return JSONResponse(
+                status_code=404,
+                content={"message": "Experiment id not valid"}
+            )
+
+        if not storage.dir_exist(reductions_dir):
+            return JSONResponse(
+                status_code=404,
+                content={"message": "Reductions dir not valid"}
+            )
 
     for reduction in reductions:
-        if reduction.file_type == 'dir':
+        file_type = reduction.file_type
+        file_name = os.path.basename(reduction.path)
+
+        if file_type == 'file' and file_name == constants.METADATA_FILENAME:
             red = {}
-            red["id"] = reduction.name
 
-            metadata_path = os.path.join(
-                reduction.path, constants.METADATA_FILENAME)
+            red["id"] = reduction.path.split(os.path.sep)[4]
 
-            if storage.file_exist(metadata_path):
-                metadata = storage.get_file(metadata_path)
-                red['metadata'] = json.loads(metadata)
-                response.append(red)
+            metadata = storage.get_file(reduction.path)
+            red['metadata'] = json.loads(metadata)
+
+            response.append(red)
 
     return response
 
@@ -111,7 +115,6 @@ def get_reduction(request: Request, experiment_id: str, reduction_id: str, user_
     storage = request.state.storage
 
     user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-
     experiment_dir = os.path.join(user_dir, experiment_id)
     reduction_dir = os.path.join(
         experiment_dir, constants.REDUCTION_DIR, reduction_id)
@@ -119,45 +122,47 @@ def get_reduction(request: Request, experiment_id: str, reduction_id: str, user_
     reduction_path = os.path.join(reduction_dir, constants.REDUCTION_FILENAME)
     labels_path = os.path.join(experiment_dir, constants.LABELS_FILENAME)
 
-    if not storage.dir_exist(experiment_dir):
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Experiment id not valid"}
-        )
+    try:
+        metadata = storage.get_file(metadata_path)
+        response['metadata'] = json.loads(metadata)
 
-    if not storage.dir_exist(reduction_dir):
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Reduction id not valid"}
-        )
+        reduction = storage.get_file(reduction_path)
+        response['points'] = json.loads(reduction)
 
-    if not storage.file_exist(metadata_path):
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Reduction metadata file not exist"}
-        )
+        labels = storage.get_file(labels_path)
+        labels = json.loads(labels)
+        response['ids'] = labels['columns']
 
-    if not storage.file_exist(reduction_path):
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Reduction file not exist"}
-        )
+    except:
+        if not storage.dir_exist(experiment_dir):
+            return JSONResponse(
+                status_code=404,
+                content={"message": "Experiment id not valid"}
+            )
 
-    if not storage.file_exist(labels_path):
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Reduction label file not exist"}
-        )
+        if not storage.dir_exist(reduction_dir):
+            return JSONResponse(
+                status_code=404,
+                content={"message": "Reduction id not valid"}
+            )
 
-    metadata = storage.get_file(metadata_path)
-    response['metadata'] = json.loads(metadata)
+        if not storage.file_exist(metadata_path):
+            return JSONResponse(
+                status_code=404,
+                content={"message": "Reduction metadata file not exist"}
+            )
 
-    reduction = storage.get_file(reduction_path)
-    response['points'] = json.loads(reduction)
+        if not storage.file_exist(reduction_path):
+            return JSONResponse(
+                status_code=404,
+                content={"message": "Reduction file not exist"}
+            )
 
-    labels = storage.get_file(labels_path)
-    labels = json.loads(labels)
-    response['ids'] = labels['columns']
+        if not storage.file_exist(labels_path):
+            return JSONResponse(
+                status_code=404,
+                content={"message": "Reduction label file not exist"}
+            )
 
     return response
 
@@ -178,7 +183,6 @@ def post_reduction(
     storage = request.state.storage
 
     user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-
     experiment_dir = os.path.join(user_dir, experiment_id)
     reductions_dir = os.path.join(experiment_dir, constants.REDUCTION_DIR)
 
@@ -223,23 +227,24 @@ def delete_reduction(request: Request, experiment_id: str, reduction_id: str, us
     storage = request.state.storage
 
     user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-
     experiment_dir = os.path.join(user_dir, experiment_id)
     reduction_dir = os.path.join(
         experiment_dir, constants.REDUCTION_DIR, reduction_id)
 
-    if not storage.dir_exist(experiment_dir):
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Experiment id not valid"}
-        )
+    try:
+        storage.delete(reduction_dir)
 
-    if not storage.dir_exist(reduction_dir):
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Reduction id not valid"}
-        )
+    except:
+        if not storage.dir_exist(experiment_dir):
+            return JSONResponse(
+                status_code=404,
+                content={"message": "Experiment id not valid"}
+            )
 
-    storage.delete(reduction_dir)
+        if not storage.dir_exist(reduction_dir):
+            return JSONResponse(
+                status_code=404,
+                content={"message": "Reduction id not valid"}
+            )
 
     return True

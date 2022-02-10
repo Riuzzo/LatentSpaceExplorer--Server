@@ -34,36 +34,40 @@ def get_clusters(request: Request, experiment_id: str, user_id: dict = Depends(a
     storage = request.state.storage
 
     user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-
     experiment_dir = os.path.join(user_dir, experiment_id)
     clusters_dir = os.path.join(experiment_dir, constants.CLUSTER_DIR)
 
-    if not storage.dir_exist(experiment_dir):
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Experiment id not valid"}
-        )
+    clusters = []
 
-    if not storage.dir_exist(clusters_dir):
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Clusters dir not valid"}
-        )
+    try:
+        clusters = storage.list(clusters_dir, depth=2)
 
-    clusters = storage.list(clusters_dir)
+    except:
+        if not storage.dir_exist(experiment_dir):
+            return JSONResponse(
+                status_code=404,
+                content={"message": "Experiment id not valid"}
+            )
+
+        if not storage.dir_exist(clusters_dir):
+            return JSONResponse(
+                status_code=404,
+                content={"message": "Clusters dir not valid"}
+            )
 
     for cluster in clusters:
-        if cluster.file_type == 'dir':
-            clus = {}
-            clus["id"] = cluster.name
+        file_type = cluster.file_type
+        file_name = os.path.basename(cluster.path)
 
-            metadata_path = os.path.join(
-                cluster.path, constants.METADATA_FILENAME)
+        if file_type == 'file' and file_name == constants.METADATA_FILENAME:
+            clu = {}
 
-            if storage.file_exist(metadata_path):
-                metadata = storage.get_file(metadata_path)
-                clus['metadata'] = json.loads(metadata)
-                response.append(clus)
+            clu["id"] = cluster.path.split(os.path.sep)[4]
+
+            metadata = storage.get_file(cluster.path)
+            clu['metadata'] = json.loads(metadata)
+
+            response.append(clu)
 
     return response
 
@@ -111,7 +115,6 @@ def get_cluster(request: Request, experiment_id: str, cluster_id: str, user_id: 
     storage = request.state.storage
 
     user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-
     experiment_dir = os.path.join(user_dir, experiment_id)
     cluster_dir = os.path.join(
         experiment_dir, constants.CLUSTER_DIR, cluster_id)
@@ -120,53 +123,55 @@ def get_cluster(request: Request, experiment_id: str, cluster_id: str, user_id: 
     silhouette_path = os.path.join(cluster_dir, constants.SILHOUETTE_FILENAME)
     scores_path = os.path.join(cluster_dir, constants.SCORES_FILENAME)
 
-    if not storage.dir_exist(experiment_dir):
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Experiment id not valid"}
-        )
+    try:
+        metadata = storage.get_file(metadata_path)
+        response['metadata'] = json.loads(metadata)
 
-    if not storage.dir_exist(cluster_dir):
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Cluster id not valid"}
-        )
+        cluster = storage.get_file(cluster_path)
+        response['groups'] = json.loads(cluster)
 
-    if not storage.file_exist(metadata_path):
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Cluster metadata file not exist"}
-        )
+        silohuette = storage.get_file(silhouette_path)
+        response['silhouettes'] = json.loads(silohuette)
 
-    if not storage.file_exist(cluster_path):
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Cluster file not exist"}
-        )
+        scores = storage.get_file(scores_path)
+        response['scores'] = json.loads(scores)
 
-    if not storage.file_exist(silhouette_path):
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Cluster silhouette file not exist"}
-        )
+    except:
+        if not storage.dir_exist(experiment_dir):
+            return JSONResponse(
+                status_code=404,
+                content={"message": "Experiment id not valid"}
+            )
 
-    if not storage.file_exist(scores_path):
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Cluster scores file not exist"}
-        )
+        if not storage.dir_exist(cluster_dir):
+            return JSONResponse(
+                status_code=404,
+                content={"message": "Cluster id not valid"}
+            )
 
-    metadata = storage.get_file(metadata_path)
-    response['metadata'] = json.loads(metadata)
+        if not storage.file_exist(metadata_path):
+            return JSONResponse(
+                status_code=404,
+                content={"message": "Cluster metadata file not exist"}
+            )
 
-    cluster = storage.get_file(cluster_path)
-    response['groups'] = json.loads(cluster)
+        if not storage.file_exist(cluster_path):
+            return JSONResponse(
+                status_code=404,
+                content={"message": "Cluster file not exist"}
+            )
 
-    silohuette = storage.get_file(silhouette_path)
-    response['silhouettes'] = json.loads(silohuette)
+        if not storage.file_exist(silhouette_path):
+            return JSONResponse(
+                status_code=404,
+                content={"message": "Cluster silhouette file not exist"}
+            )
 
-    scores = storage.get_file(scores_path)
-    response['scores'] = json.loads(scores)
+        if not storage.file_exist(scores_path):
+            return JSONResponse(
+                status_code=404,
+                content={"message": "Cluster scores file not exist"}
+            )
 
     return response
 
@@ -189,7 +194,6 @@ def post_cluster(
     storage = request.state.storage
 
     user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-
     experiment_dir = os.path.join(user_dir, experiment_id)
     clusters_dir = os.path.join(experiment_dir, constants.CLUSTER_DIR)
 
@@ -233,23 +237,24 @@ def delete_cluster(request: Request, experiment_id: str, cluster_id: str, user_i
     storage = request.state.storage
 
     user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-
     experiment_dir = os.path.join(user_dir, experiment_id)
     cluster_dir = os.path.join(
         experiment_dir, constants.CLUSTER_DIR, cluster_id)
 
-    if not storage.dir_exist(experiment_dir):
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Experiment id not valid"}
-        )
+    try:
+        storage.delete(cluster_dir)
 
-    if not storage.dir_exist(cluster_dir):
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Cluster id not valid"}
-        )
+    except:
+        if not storage.dir_exist(experiment_dir):
+            return JSONResponse(
+                status_code=404,
+                content={"message": "Experiment id not valid"}
+            )
 
-    storage.delete(cluster_dir)
+        if not storage.dir_exist(cluster_dir):
+            return JSONResponse(
+                status_code=404,
+                content={"message": "Cluster id not valid"}
+            )
 
     return True
