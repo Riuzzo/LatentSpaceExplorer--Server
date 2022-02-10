@@ -47,7 +47,6 @@ def shutdown_worker(**kwargs):
 @celery.task(name="reduction")
 def reduction(algorithm, components, params, experiment_id, user_id):
     user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-
     embeddings_path = os.path.join(
         user_dir, experiment_id, constants.EMBEDDINGS_FILENAME)
     embeddings = json.loads(storage.get_file(embeddings_path))
@@ -115,7 +114,7 @@ def reduction(algorithm, components, params, experiment_id, user_id):
 
     # save reduction
 
-    reduction_file = os.path.join(result_dir, 'reduction.json')
+    reduction_file = os.path.join(result_dir, constants.REDUCTION_FILENAME)
 
     storage.put_file(reduction_file, json.dumps(reduction.tolist()))
 
@@ -130,7 +129,7 @@ def reduction(algorithm, components, params, experiment_id, user_id):
         'seconds_elapsed': int(end_time - start_time)
     }
 
-    metadata_path = os.path.join(result_dir, 'metadata.json')
+    metadata_path = os.path.join(result_dir, constants.METADATA_FILENAME)
     storage.put_file(metadata_path, json.dumps(metadata))
 
     return result_id
@@ -139,7 +138,6 @@ def reduction(algorithm, components, params, experiment_id, user_id):
 @celery.task(name="cluster")
 def cluster(algorithm, params, experiment_id, user_id):
     user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-
     embeddings_path = os.path.join(
         user_dir, experiment_id, constants.EMBEDDINGS_FILENAME)
     embeddings = json.loads(storage.get_file(embeddings_path))
