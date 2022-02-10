@@ -30,21 +30,21 @@ def get_experiments(request: Request, user_id: dict = Depends(authorization)):
     storage = request.state.storage
 
     user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-
-    experiments = storage.list(user_dir)
+    experiments = storage.list(user_dir, depth=2)
 
     for experiment in experiments:
-        if experiment.file_type == 'dir':
+        file_type = experiment.file_type
+        file_name = os.path.basename(experiment.path)
+
+        if file_type == 'file' and file_name == constants.METADATA_FILENAME:
             exp = {}
-            exp["id"] = experiment.name
 
-            metadata_path = os.path.join(
-                experiment.path, constants.METADATA_FILENAME)
+            exp["id"] = experiment.path.split(os.path.sep)[2]
 
-            if storage.file_exist(metadata_path):
-                metadata = storage.get_file(metadata_path)
-                exp['metadata'] = json.loads(metadata)
-                response.append(exp)
+            metadata = storage.get_file(experiment.path)
+            exp['metadata'] = json.loads(metadata)
+
+            response.append(exp)
 
     return response
 
@@ -65,24 +65,25 @@ def get_experiment(request: Request, experiment_id: str, user_id: dict = Depends
     storage = request.state.storage
 
     user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-
     experiment_dir = os.path.join(user_dir, experiment_id)
-    metadata_path = os.path.join(experiment_dir, 'metadata.json')
+    metadata_path = os.path.join(experiment_dir, constants.METADATA_FILENAME)
 
-    if not storage.dir_exist(experiment_dir):
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Experiment id not valid"}
-        )
+    try:
+        metadata = storage.get_file(metadata_path)
+        response['metadata'] = json.loads(metadata)
 
-    if not storage.file_exist(metadata_path):
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Experiment metadata file not exist"}
-        )
+    except:
+        if not storage.dir_exist(experiment_dir):
+            return JSONResponse(
+                status_code=404,
+                content={"message": "Experiment id not valid"}
+            )
 
-    metadata = storage.get_file(metadata_path)
-    response['metadata'] = json.loads(metadata)
+        if not storage.file_exist(metadata_path):
+            return JSONResponse(
+                status_code=404,
+                content={"message": "Experiment metadata file not exist"}
+            )
 
     return response
 
@@ -101,16 +102,17 @@ def delete_experiment(request: Request, experiment_id: str, user_id: dict = Depe
     storage = request.state.storage
 
     user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-
     experiment_dir = os.path.join(user_dir, experiment_id)
 
-    if not storage.dir_exist(experiment_dir):
-        return JSONResponse(
-            status_code=404,
-            content={
-                "message": "Experiment id not valid"}
-        )
+    try:
+        storage.delete(experiment_dir)
 
-    storage.delete(experiment_dir)
+    except:
+        if not storage.dir_exist(experiment_dir):
+            return JSONResponse(
+                status_code=404,
+                content={
+                    "message": "Experiment id not valid"}
+            )
 
     return True

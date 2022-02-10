@@ -30,23 +30,24 @@ def get_labels(request: Request, experiment_id: str, user_id: dict = Depends(aut
     storage = request.state.storage
 
     user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-
     experiment_dir = os.path.join(user_dir, experiment_id)
     labels_path = os.path.join(experiment_dir, constants.LABELS_FILENAME)
 
-    if not storage.dir_exist(experiment_dir):
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Experiment id not valid"}
-        )
+    try:
+        labels = storage.get_file(labels_path)
+        response = json.loads(labels)
 
-    if not storage.file_exist(labels_path):
-        return JSONResponse(
-            status_code=404,
-            content={"message": "Labels file not exist"}
-        )
+    except:
+        if not storage.dir_exist(experiment_dir):
+            return JSONResponse(
+                status_code=404,
+                content={"message": "Experiment id not valid"}
+            )
 
-    labels = storage.get_file(labels_path)
-    response = json.loads(labels)
+        if not storage.file_exist(labels_path):
+            return JSONResponse(
+                status_code=404,
+                content={"message": "Labels file not exist"}
+            )
 
     return response

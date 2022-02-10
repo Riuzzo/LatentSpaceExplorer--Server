@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 from pydantic import BaseModel
 
 
@@ -33,8 +33,8 @@ class ClusterBaseModel(BaseModel):
 class ClusterModel(BaseModel):
     metadata: Metadata
     groups: List[int]
-    silhouettes: List[float]
-    scores: Scores
+    silhouettes: Union[List, List[float]]
+    scores: Union[dict, Scores]
 
 
 class ClusterPendingModel(BaseModel):

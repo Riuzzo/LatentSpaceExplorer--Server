@@ -28,11 +28,11 @@ def get_single_image(image_name: str, experiment_id: str, request: Request, user
     storage = request.state.storage
 
     data_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-    path = os.path.join(data_dir, experiment_id,
-                        constants.IMAGES_DIR, image_name)
+    image_path = os.path.join(data_dir, experiment_id,
+                              constants.IMAGES_DIR, image_name)
 
     try:
-        link = storage.get_link(path)
+        link = storage.get_link(image_path)
 
     except owncloud.owncloud.HTTPResponseError:
         return JSONResponse(
