@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: server
-          image: gitlab.neanias.eu:5050/s3-service/latent-space-explorer/server:v0.0.3-production
+          image: gitlab.neanias.eu:5050/s3-service/latent-space-explorer/server:v0.1.0-production
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
