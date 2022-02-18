@@ -11,8 +11,8 @@ def retry(exceptions=(Exception), max=3, delay=3, backoff=1):
                     return callback(*args, **kwargs)
 
                 except exceptions as exception:
+                    
                     sleep = delay ** (backoff * attempts)
-
                     print('retry exception:\n\t{}\n\tattempts: {}\n\tsleep: {}'.format(
                         exception, attempts, sleep))
 

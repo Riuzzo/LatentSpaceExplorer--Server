@@ -1,6 +1,7 @@
 import owncloud
 from owncloud import HTTPResponseError
 from requests.exceptions import ConnectionError
+from time import time
 
 from src.utils.retry import retry
 
@@ -45,9 +46,25 @@ class Storage():
 
     @retry(exceptions=(ConnectionError))
     def get_link(self, file_path):
-        if self.oc.is_shared(file_path):
-            return self.oc.get_shares(file_path)[0].get_link()
-        return self.oc.share_file_with_link(file_path).get_link()
+        start = time()
+        is_shared = self.oc.is_shared(file_path)
+        elapsed = time() - start
+        print("Check shared")
+        print(elapsed)
+        if is_shared:
+            start = time()
+            link = self.oc.get_shares(file_path)[0].get_link()
+            elapsed = time() - start
+            print("Get link")
+            print(elapsed)
+        else:
+            start = time()
+            link = self.oc.share_file_with_link(file_path).get_link()
+            elapsed = time() - start
+            print("Share link")
+            print(elapsed)
+        
+        return link
 
     @retry(exceptions=(ConnectionError))
     def mkdir(self, dir_path):
