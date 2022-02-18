@@ -87,6 +87,33 @@ def get_experiment(request: Request, experiment_id: str, user_id: dict = Depends
 
     return response
 
+@router.get(
+    "/experiments/{experiment_id}/images_share_link",
+    tags=["experiment"],
+    summary="Get experiment images folder public link or share it",
+)
+def get_experiment_share_link(request: Request, experiment_id: str, user_id: dict = Depends(authorization)):
+    storage = request.state.storage
+
+    data_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
+    images_dir_path = os.path.join(data_dir, experiment_id,
+                              constants.IMAGES_DIR)
+
+    try:
+        link = storage.get_link(images_dir_path)
+        print(link)
+
+    except:
+        return {
+            404: {
+                "model": ErrorModel
+            }
+        }
+    #https://files.dev.neanias.eu/apps/files_sharing/publicpreview/WNqGsYJ4FgkNeRs
+    link = os.path.split(link)[-1]
+    print(link)
+    return '{}'.format(link)
+
 
 @router.delete(
     "/experiments/{experiment_id}",
