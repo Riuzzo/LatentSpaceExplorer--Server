@@ -75,3 +75,7 @@ class ExperimentBaseModel(BaseModel):
 class ExperimentModel(BaseModel):
     id: str
     metadata: Metadata
+
+
+class ExperimentPublicImagesFolderNameModel(BaseModel):
+    images_folder_name: str

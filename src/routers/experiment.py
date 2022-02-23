@@ -5,7 +5,7 @@ from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
 from typing import List
 
-from src.models.responses.experiment import ExperimentBaseModel, ExperimentModel
+from src.models.responses.experiment import ExperimentBaseModel, ExperimentModel, ExperimentPublicImagesFolderNameModel
 from src.models.responses.error import ErrorModel
 
 import src.utils.constants as constants
@@ -116,3 +116,34 @@ def delete_experiment(request: Request, experiment_id: str, user_id: dict = Depe
             )
 
     return True
+
+
+@router.get(
+    "/experiments/{experiment_id}/public-images-folder-name",
+    tags=["experiment"],
+    summary="Get experiment public images folder name",
+    response_model=ExperimentPublicImagesFolderNameModel,
+    responses={
+        404: {
+            "model": ErrorModel
+        }
+    }
+)
+def get_experiment_public_images_folder_name(request: Request, experiment_id: str, user_id: dict = Depends(authorization)):
+    response = {}
+    storage = request.state.storage
+
+    data_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
+    images_dir = os.path.join(data_dir, experiment_id, constants.IMAGES_DIR)
+
+    try:
+        public_name = storage.get_link(images_dir)
+        response['images_folder_name'] = os.path.split(public_name)[-1]
+
+    except:
+        return JSONResponse(
+            status_code=404,
+            content={"message": "Experiment images public folder name not exist"}
+        )
+
+    return response
