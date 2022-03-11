@@ -14,6 +14,9 @@ from src.models.responses.error import ErrorModel
 import src.utils.constants as constants
 from src.utils.authorization import authorization
 
+import structlog
+
+logger = structlog.getLogger("json_logger")
 
 router = APIRouter()
 
@@ -219,6 +222,10 @@ def post_cluster(
     )
 
     response['task_id'] = task.id
+
+    logger.info(message='Posted cluster task', action='Clustering', subaction=cluster.algorithm, resource='lse-service', userid=user_id)
+    logger.accounting(message='Posted cluster task', action='Clustering', value=1, measue="unit", resource='lse', userid=user_id)
+
 
     return response
 
