@@ -17,6 +17,52 @@ from src.routers import experiment, reduction, cluster, label, task, image, stat
 from src.utils.storage import Storage
 from src.utils.authorization import AuthError
 
+# logging
+import logging
+import structlog
+from pythonjsonlogger import jsonlogger
+
+### LOGGING CONFIGURATION
+
+# Extending structlogger with custom level 'accounting'
+ACCOUNTING = 15    # set to random value between DEBUG and INFO
+
+structlog.stdlib.ACCOUNTING = ACCOUNTING
+structlog.stdlib._NAME_TO_LEVEL['accounting'] = ACCOUNTING
+structlog.stdlib._LEVEL_TO_NAME[ACCOUNTING] = 'accounting'
+
+def accounting(self, *args, **kw):
+    return self.log(ACCOUNTING, *args, **kw)
+
+structlog.stdlib._FixedFindCallerLogger.accounting = accounting
+structlog.stdlib.BoundLogger.accounting = accounting
+
+structlog.configure(
+    processors=[
+        structlog.stdlib.filter_by_level,
+        structlog.processors.TimeStamper(fmt="iso"),
+        structlog.stdlib.add_logger_name,
+        structlog.stdlib.add_log_level,
+        structlog.stdlib.PositionalArgumentsFormatter(),
+        structlog.processors.StackInfoRenderer(),
+        structlog.processors.format_exc_info,
+        structlog.processors.UnicodeDecoder(),
+        structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
+    ],
+    context_class=structlog.threadlocal.wrap_dict(dict),
+    logger_factory=structlog.stdlib.LoggerFactory(),
+    wrapper_class=structlog.stdlib.BoundLogger,
+    cache_logger_on_first_use=True,
+)
+
+handler = logging.StreamHandler()
+handler.setFormatter(jsonlogger.JsonFormatter())
+
+mylogger = structlog.getLogger("json_logger")
+mylogger.setLevel(logging.DEBUG)
+
+if not mylogger.handlers:
+    mylogger.addHandler(handler)
 
 # environment
 load_dotenv()
