@@ -194,6 +194,9 @@ def cluster(algorithm, params, experiment_id, user_id):
         ).fit_predict(embeddings)
 
     elif algorithm == 'birch':
+        if params['n_clusters'] == 0:
+            params['n_clusters'] = None
+
         clusters = Birch(
             n_clusters=params['n_clusters'],
             threshold=params['threshold']
