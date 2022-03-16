@@ -21,7 +21,6 @@ from src.celery_app import celeryconfig
 import src.utils.constants as constants
 from src.utils.storage import Storage
 
-
 celery = Celery()
 celery.config_from_object(celeryconfig)
 

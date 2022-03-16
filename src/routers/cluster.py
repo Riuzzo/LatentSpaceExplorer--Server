@@ -282,18 +282,20 @@ def delete_cluster(request: Request, experiment_id: str, cluster_id: str, user_i
 
     try:
         storage.delete(cluster_dir)
-
+        logger.info(message='Deleted cluster {}'.format(cluster_id), action='delete_cluster', resource='lse-service', userid=user_id)
     except:
         if not storage.dir_exist(experiment_dir):
+            logger.error(message='Experiment id not valid', action='delete_cluster', status='FAILED', resource='lse-service', userid=user_id)
             return JSONResponse(
                 status_code=404,
                 content={"message": "Experiment id not valid"}
             )
 
         if not storage.dir_exist(cluster_dir):
+            logger.error(message='Cluster id not valid', action='delete_cluster', status='FAILED', resource='lse-service', userid=user_id)
             return JSONResponse(
                 status_code=404,
                 content={"message": "Cluster id not valid"}
             )
-
+    
     return True

@@ -1,5 +1,8 @@
 import time
 
+import structlog
+
+logger = structlog.getLogger("json_logger")
 
 def retry(exceptions=(Exception), max=3, delay=3, backoff=1):
     def decorator(callback):
@@ -8,6 +11,7 @@ def retry(exceptions=(Exception), max=3, delay=3, backoff=1):
 
             while (max - attempts) > 0:
                 try:
+                    logger.info(message='Retry {}'.format(attempts), action='retry', status='SUCCESS', resource='lse-service')
                     return callback(*args, **kwargs)
 
                 except exceptions as exception:
