@@ -1,4 +1,5 @@
 import os
+import time
 from dotenv import load_dotenv
 from fastapi.exceptions import HTTPException, RequestValidationError
 from fastapi.encoders import jsonable_encoder
@@ -23,6 +24,12 @@ import structlog
 from pythonjsonlogger import jsonlogger
 
 ### LOGGING CONFIGURATION
+
+
+#logger.info(message='Posted cluster task', action='Clustering', subaction=cluster.algorithm, resource='lse-service', userid=user_id)
+#logger.warning(message='Posted cluster task', action='Clustering', subaction=cluster.algorithm, resource='lse-service', userid=user_id)
+#logger.debug(message='Posted cluster task', action='Clustering', subaction=cluster.algorithm, resource='lse-service', userid=user_id)
+#logger.accounting(message='Posted cluster task', action='Clustering', value=1, measue="unit", resource='lse', userid=user_id)
 
 # Extending structlogger with custom level 'accounting'
 ACCOUNTING = 15    # set to random value between DEBUG and INFO
@@ -58,11 +65,11 @@ structlog.configure(
 handler = logging.StreamHandler()
 handler.setFormatter(jsonlogger.JsonFormatter())
 
-mylogger = structlog.getLogger("json_logger")
-mylogger.setLevel(logging.DEBUG)
+logger = structlog.getLogger("json_logger")
+logger.setLevel(logging.DEBUG)
 
-if not mylogger.handlers:
-    mylogger.addHandler(handler)
+if not logger.handlers:
+    logger.addHandler(handler)
 
 # environment
 load_dotenv()
@@ -164,16 +171,21 @@ app.include_router(status.router)
 # startup event
 @app.on_event("startup")
 async def startup():
+    initial_time = time.time()
     storage.connect(
         user=os.getenv('NEXCLOUD_USER'),
         password=os.getenv('NEXCLOUD_PASSWORD'),
     )
+    elapsed = time.time() - initial_time
+    #Add time elapsed to the log?
+    logger.info(message='Storage client connected to nextcloud', duration=elapsed, action='storage-client-connected', resource='lse-service', userid="Server")
 
 
 # shutdown event
 @app.on_event("shutdown")
 async def shutdown():
     storage.disconnect()
+    logger.info(message='Storage client disconnected from nextcloud', action='storage-client-disconnected', resource='lse-service', userid="Server")
 
 
 if __name__ == "__main__":
