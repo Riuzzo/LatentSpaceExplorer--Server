@@ -178,14 +178,14 @@ async def startup():
     )
     elapsed = time.time() - initial_time
     #Add time elapsed to the log?
-    logger.info(message='Storage client connected to nextcloud', duration=elapsed, action='storage-client-connected', resource='lse-service', userid="Server")
+    logger.info(message='Storage client connected to nextcloud', duration=elapsed, action='storage_client_connected', resource='lse-service', userid="Server")
 
 
 # shutdown event
 @app.on_event("shutdown")
 async def shutdown():
     storage.disconnect()
-    logger.info(message='Storage client disconnected from nextcloud', action='storage-client-disconnected', resource='lse-service', userid="Server")
+    logger.info(message='Storage client disconnected from nextcloud', action='storage_client_disconnected', resource='lse-service', userid="Server")
 
 
 if __name__ == "__main__":

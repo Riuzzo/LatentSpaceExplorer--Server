@@ -52,7 +52,7 @@ def get_labels(request: Request, experiment_id: str, user_id: dict = Depends(aut
             )
 
         if not storage.file_exist(labels_path):
-            logger.error(message='Experiment labels file not exist', action='get_labels', subaction="get_file" status='FAILED', resource='lse-service', userid=user_id)
+            logger.error(message='Experiment labels file not exist', action='get_labels', subaction="get_file", status='FAILED', resource='lse-service', userid=user_id)
             return JSONResponse(
                 status_code=404,
                 content={"message": "Labels file not exist"}

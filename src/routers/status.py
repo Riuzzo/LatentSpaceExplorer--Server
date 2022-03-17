@@ -39,6 +39,6 @@ def get_status():
     response['scheduler'] = len(workers.keys()) > 0
 
     elapsed = time.time() - total_time
-    logger.info(message='Get status', action='get_status', status='SUCCESS', resource='lse-service', elapsed=elapsed)
+    logger.info(message='Get status', action='get_status', status='SUCCESS', resource='lse-service', duration=elapsed)
 
     return response

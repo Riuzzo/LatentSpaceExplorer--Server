@@ -48,7 +48,7 @@ def get_reductions(request: Request, experiment_id: str, user_id: dict = Depends
         initial_time = time.time()
         reductions = storage.list(reductions_dir, depth=2)
         elapsed = time.time() - initial_time
-        logger.debug(message='Listing reductions', action='get_reductions', subaction="list", status='SUCCESS', resource='lse-service', userid=user_id, elapsed=elapsed)
+        logger.debug(message='Listing reductions', action='get_reductions', subaction="list", status='SUCCESS', resource='lse-service', userid=user_id, duration=elapsed)
 
     except:
         if not storage.dir_exist(experiment_dir):
@@ -76,13 +76,13 @@ def get_reductions(request: Request, experiment_id: str, user_id: dict = Depends
             initial_time = time.time()
             metadata = storage.get_file(reduction.path)
             elapsed = time.time() - initial_time
-            logger.debug(message='Getting metadata', action='get_reductions', subaction="get_file", status='SUCCESS', resource='lse-service', userid=user_id, elapsed=elapsed)
+            logger.debug(message='Getting metadata', action='get_reductions', subaction="get_file", status='SUCCESS', resource='lse-service', userid=user_id, duration=elapsed)
             red['metadata'] = json.loads(metadata)
 
             response.append(red)
 
     elapsed = time.time() - total_time
-    logger.info(message='Get reductions', action='get_reductions', status='SUCCESS', resource='lse-service', userid=user_id, elapsed=elapsed)
+    logger.info(message='Get reductions', action='get_reductions', status='SUCCESS', resource='lse-service', userid=user_id, duration=elapsed)
     return response
 
 
@@ -113,7 +113,7 @@ def get_pending_reductions_count(experiment_id: str, user_id: dict = Depends(aut
                 response['count'] += 1
     
     elapsed = time.time() - total_time
-    logger.info(message='{} reductions in pending'.format(response['count']), action='get_pending_reductions_count', status='SUCCESS', resource='lse-service', userid=user_id, elapsed=elapsed)
+    logger.info(message='{} reductions in pending'.format(response['count']), action='get_pending_reductions_count', status='SUCCESS', resource='lse-service', userid=user_id, duration=elapsed)
     return response
 
 
@@ -144,19 +144,19 @@ def get_reduction(request: Request, experiment_id: str, reduction_id: str, user_
         initial_time = time.time()
         metadata = storage.get_file(metadata_path)
         elapsed = time.time() - initial_time
-        logger.debug(message='Getting metadata', action='get_reduction', subaction="get_metadata_file", status='SUCCESS', resource='lse-service', userid=user_id, elapsed=elapsed)
+        logger.debug(message='Getting metadata', action='get_reduction', subaction="get_metadata_file", status='SUCCESS', resource='lse-service', userid=user_id, duration=elapsed)
         response['metadata'] = json.loads(metadata)
 
         initial_time = time.time()
         reduction = storage.get_file(reduction_path)
         elapsed = time.time() - initial_time
-        logger.debug(message='Getting reduction', action='get_reduction', subaction="get_reduction_file", status='SUCCESS', resource='lse-service', userid=user_id, elapsed=elapsed)
+        logger.debug(message='Getting reduction', action='get_reduction', subaction="get_reduction_file", status='SUCCESS', resource='lse-service', userid=user_id, duration=elapsed)
         response['points'] = json.loads(reduction)
 
         initial_time = time.time()
         labels = storage.get_file(labels_path)
         elapsed = time.time() - initial_time
-        logger.debug(message='Getting labels', action='get_reduction', subaction="get_labels_file", status='SUCCESS', resource='lse-service', userid=user_id, elapsed=elapsed)
+        logger.debug(message='Getting labels', action='get_reduction', subaction="get_labels_file", status='SUCCESS', resource='lse-service', userid=user_id, duration=elapsed)
         labels = json.loads(labels)
         response['ids'] = labels['columns']
 
@@ -197,7 +197,7 @@ def get_reduction(request: Request, experiment_id: str, reduction_id: str, user_
             )
     
     elapsed = time.time() - total_time
-    logger.info(message='Get reduction', action='get_reduction', status='SUCCESS', resource='lse-service', userid=user_id, elapsed=elapsed)
+    logger.info(message='Get reduction', action='get_reduction', status='SUCCESS', resource='lse-service', userid=user_id, duration=elapsed)
     return response
 
 
@@ -243,9 +243,9 @@ def post_reduction(
         }
     )
 
-    response['task_id'] = task.idù
+    response['task_id'] = task.id
     elapsed = time.time() - total_time
-    logger.info(message='Calculate reduction task added', action='post_reduction', status='SUCCESS', resource='lse-service', userid=user_id, elapsed=elapsed)
+    logger.info(message='Calculate reduction task added', action='post_reduction', status='SUCCESS', resource='lse-service', userid=user_id, duration=elapsed)
     return response
 
 
@@ -272,7 +272,7 @@ def delete_reduction(request: Request, experiment_id: str, reduction_id: str, us
         initial_time = time.time()
         storage.delete(reduction_dir)
         elapsed = time.time() - initial_time
-        logger.debug(message='Reduction deleted', action='delete_reduction', subaction='delete_reduction_dir', status='SUCCESS', resource='lse-service', userid=user_id, elapsed=elapsed)
+        logger.debug(message='Reduction deleted', action='delete_reduction', subaction='delete_reduction_dir', status='SUCCESS', resource='lse-service', userid=user_id, duration=elapsed)
 
     except:
         if not storage.dir_exist(experiment_dir):
@@ -290,6 +290,6 @@ def delete_reduction(request: Request, experiment_id: str, reduction_id: str, us
             )
 
     elapsed = time.time() - total_time
-    logger.info(message='Delete reduction', action='delete_reduction', status='SUCCESS', resource='lse-service', userid=user_id, elapsed=elapsed)
+    logger.info(message='Delete reduction', action='delete_reduction', status='SUCCESS', resource='lse-service', userid=user_id, duration=elapsed)
 
     return True
