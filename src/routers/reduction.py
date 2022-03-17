@@ -246,6 +246,7 @@ def post_reduction(
     response['task_id'] = task.id
     elapsed = time.time() - total_time
     logger.info(message='Calculate reduction task added', action='post_reduction', status='SUCCESS', resource='lse-service', userid=user_id, duration=elapsed)
+    logger.accounting(message='Posted reduction task', action='Reduction', value=1, measure="unit", resource='lse', userid=user_id)
     return response
 
 
