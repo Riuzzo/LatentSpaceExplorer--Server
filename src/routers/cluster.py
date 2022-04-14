@@ -17,7 +17,6 @@ from src.utils.authorization import authorization
 
 router = APIRouter()
 
-
 @router.get(
     "/experiments/{experiment_id}/clusters",
     tags=["cluster"],
@@ -33,9 +32,14 @@ def get_clusters(request: Request, experiment_id: str, user_id: dict = Depends(a
     response = []
     storage = request.state.storage
 
-    user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-    experiment_dir = os.path.join(user_dir, experiment_id)
-    clusters_dir = os.path.join(experiment_dir, constants.CLUSTER_DIR)
+    if experiment_id.startswith('demo'):
+        experiment_dir = os.path.join(constants.DEMO_DIR, experiment_id)
+        user_cluster_dir = 'data-{}'.format(user_id)
+        clusters_dir = os.path.join(experiment_dir, user_cluster_dir, constants.CLUSTER_DIR)
+    else:
+        user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
+        experiment_dir = os.path.join(user_dir, experiment_id)
+        clusters_dir = os.path.join(experiment_dir, constants.CLUSTER_DIR)
 
     clusters = []
 

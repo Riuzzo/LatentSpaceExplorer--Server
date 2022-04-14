@@ -54,6 +54,10 @@ class Storage():
         return self.oc.mkdir(dir_path)
 
     @retry(exceptions=(ConnectionError))
+    def copy(self, source_path, target_path):
+        return self.oc.copy(source_path, target_path)
+
+    @retry(exceptions=(ConnectionError))
     def put_file(self, file_path, file_data):
         return self.oc.put_file_contents(file_path, file_data)
 

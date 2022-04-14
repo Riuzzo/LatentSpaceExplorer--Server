@@ -1,4 +1,5 @@
 NEXTCLOUD_PREFIX_USER_DIR = 'lse-'
+DEMO_DIR = 'lse-demo'
 
 EMBEDDINGS_FILENAME = 'embeddings.json'
 METADATA_FILENAME = 'metadata.json'

@@ -29,8 +29,11 @@ def get_images_folder_name(request: Request, experiment_id: str, user_id: dict =
     response = {}
     storage = request.state.storage
 
-    data_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-    images_dir = os.path.join(data_dir, experiment_id, constants.IMAGES_DIR)
+    if experiment_id.startswith('demo'):
+        images_dir = os.path.join(constants.DEMO_DIR, experiment_id, constants.IMAGES_DIR)
+    else:
+        data_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
+        images_dir = os.path.join(data_dir, experiment_id, constants.IMAGES_DIR)
 
     try:
         public_name = storage.get_link(images_dir)

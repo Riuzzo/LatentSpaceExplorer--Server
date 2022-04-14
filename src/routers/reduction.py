@@ -33,9 +33,14 @@ def get_reductions(request: Request, experiment_id: str, user_id: dict = Depends
     response = []
     storage = request.state.storage
 
-    user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-    experiment_dir = os.path.join(user_dir, experiment_id)
-    reductions_dir = os.path.join(experiment_dir, constants.REDUCTION_DIR)
+    if experiment_id.startswith('demo'):
+        experiment_dir = os.path.join(constants.DEMO_DIR, experiment_id)
+        user_reductions_dir = 'data-{}'.format(user_id)
+        reductions_dir = os.path.join(experiment_dir, user_reductions_dir, constants.REDUCTION_DIR)
+    else:
+        user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
+        experiment_dir = os.path.join(user_dir, experiment_id)
+        reductions_dir = os.path.join(experiment_dir, constants.REDUCTION_DIR)
 
     reductions = []
 
@@ -62,7 +67,7 @@ def get_reductions(request: Request, experiment_id: str, user_id: dict = Depends
         if file_type == 'file' and file_name == constants.METADATA_FILENAME:
             red = {}
 
-            red["id"] = reduction.path.split(os.path.sep)[4]
+            red["id"] = reduction.path.split(os.path.sep)[-2]
 
             metadata = storage.get_file(reduction.path)
             red['metadata'] = json.loads(metadata)
@@ -114,14 +119,25 @@ def get_reduction(request: Request, experiment_id: str, reduction_id: str, user_
     response = {}
     storage = request.state.storage
 
-    user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-    experiment_dir = os.path.join(user_dir, experiment_id)
-    reduction_dir = os.path.join(
-        experiment_dir, constants.REDUCTION_DIR, reduction_id)
+    if experiment_id.startswith('demo'):
+        experiment_dir = os.path.join(constants.DEMO_DIR, experiment_id)
+        user_reductions_dir = 'data-{}'.format(user_id)
+        reduction_dir = os.path.join(
+            experiment_dir, user_reductions_dir, constants.REDUCTION_DIR, reduction_id)
+        
+    else:
+        user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
+        experiment_dir = os.path.join(user_dir, experiment_id)
+        reduction_dir = os.path.join(
+            experiment_dir, constants.REDUCTION_DIR, reduction_id)
+    
+    
     metadata_path = os.path.join(reduction_dir, constants.METADATA_FILENAME)
     reduction_path = os.path.join(reduction_dir, constants.REDUCTION_FILENAME)
     labels_path = os.path.join(experiment_dir, constants.LABELS_FILENAME)
-
+    print(metadata_path)
+    print(reduction_path)
+    print(labels_path)
     try:
         metadata = storage.get_file(metadata_path)
         response['metadata'] = json.loads(metadata)

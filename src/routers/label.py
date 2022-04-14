@@ -29,8 +29,12 @@ def get_labels(request: Request, experiment_id: str, user_id: dict = Depends(aut
     response = {}
     storage = request.state.storage
 
-    user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-    experiment_dir = os.path.join(user_dir, experiment_id)
+    if experiment_id.startswith('demo'):
+        experiment_dir = os.path.join(constants.DEMO_DIR, experiment_id)
+    else:
+        user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
+        experiment_dir = os.path.join(user_dir, experiment_id)
+    
     labels_path = os.path.join(experiment_dir, constants.LABELS_FILENAME)
 
     try:
