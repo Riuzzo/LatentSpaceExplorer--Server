@@ -135,10 +135,8 @@ def get_reduction(request: Request, experiment_id: str, reduction_id: str, user_
     metadata_path = os.path.join(reduction_dir, constants.METADATA_FILENAME)
     reduction_path = os.path.join(reduction_dir, constants.REDUCTION_FILENAME)
     labels_path = os.path.join(experiment_dir, constants.LABELS_FILENAME)
-    print(metadata_path)
-    print(reduction_path)
-    print(labels_path)
     try:
+        # TODO make it more efficient, less call and split labels file to be less heavy to be readed
         metadata = storage.get_file(metadata_path)
         response['metadata'] = json.loads(metadata)
 
@@ -198,9 +196,15 @@ def post_reduction(
     response = {}
     storage = request.state.storage
 
-    user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-    experiment_dir = os.path.join(user_dir, experiment_id)
-    reductions_dir = os.path.join(experiment_dir, constants.REDUCTION_DIR)
+
+    if experiment_id.startswith('demo'):
+        experiment_dir = os.path.join(constants.DEMO_DIR, experiment_id)
+        user_reductions_dir = 'data-{}'.format(user_id)
+        reductions_dir = os.path.join(experiment_dir, user_reductions_dir, constants.CLUSTER_DIR)
+    else:
+        user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
+        experiment_dir = os.path.join(user_dir, experiment_id)
+        reductions_dir = os.path.join(experiment_dir, constants.REDUCTION_DIR)
 
     if not storage.dir_exist(experiment_dir):
         return JSONResponse(
@@ -242,10 +246,15 @@ def post_reduction(
 def delete_reduction(request: Request, experiment_id: str, reduction_id: str, user_id: dict = Depends(authorization)):
     storage = request.state.storage
 
-    user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-    experiment_dir = os.path.join(user_dir, experiment_id)
-    reduction_dir = os.path.join(
-        experiment_dir, constants.REDUCTION_DIR, reduction_id)
+    if experiment_id.startswith('demo'):
+        experiment_dir = os.path.join(constants.DEMO_DIR, experiment_id)
+        user_reduction_dir = 'data-{}'.format(user_id)
+        reduction_dir = os.path.join(experiment_dir, user_reduction_dir, constants.CLUSTER_DIR, reduction_id)
+    else:
+        user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
+        experiment_dir = os.path.join(user_dir, experiment_id)
+        reduction_dir = os.path.join(
+            experiment_dir, constants.REDUCTION_DIR, reduction_id)
 
     try:
         storage.delete(reduction_dir)

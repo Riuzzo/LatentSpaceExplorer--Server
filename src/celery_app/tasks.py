@@ -46,9 +46,15 @@ def shutdown_worker(**kwargs):
 
 @celery.task(name="reduction")
 def reduction(algorithm, components, params, experiment_id, user_id):
-    user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-    embeddings_path = os.path.join(
-        user_dir, experiment_id, constants.EMBEDDINGS_FILENAME)
+    if experiment_id.startswith('demo'):
+        experiment_dir = os.path.join(constants.DEMO_DIR, experiment_id)
+        embeddings_path = os.path.join(
+            experiment_dir, constants.EMBEDDINGS_FILENAME)
+    else:
+        user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
+        embeddings_path = os.path.join(
+            user_dir, experiment_id, constants.EMBEDDINGS_FILENAME)
+        
     embeddings = json.loads(storage.get_file(embeddings_path))
 
     start_time = time.time()
@@ -107,8 +113,13 @@ def reduction(algorithm, components, params, experiment_id, user_id):
     # setup result
 
     result_id = str(int(time.time()))
-    result_dir = os.path.join(
-        user_dir, experiment_id, constants.REDUCTION_DIR, result_id)
+    if experiment_id.startswith('demo'):
+        user_demo_dir = 'data-{}'.format(user_id)
+        result_dir = os.path.join(
+            experiment_dir, user_demo_dir, constants.REDUCTION_DIR, result_id)
+    else:
+        result_dir = os.path.join(
+            user_dir, experiment_id, constants.REDUCTION_DIR, result_id)
 
     storage.mkdir(result_dir)
 
@@ -137,9 +148,15 @@ def reduction(algorithm, components, params, experiment_id, user_id):
 
 @celery.task(name="cluster")
 def cluster(algorithm, params, experiment_id, user_id):
-    user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-    embeddings_path = os.path.join(
-        user_dir, experiment_id, constants.EMBEDDINGS_FILENAME)
+    if experiment_id.startswith('demo'):
+        experiment_dir = os.path.join(constants.DEMO_DIR, experiment_id)
+        embeddings_path = os.path.join(
+            experiment_dir, constants.EMBEDDINGS_FILENAME)
+    else:
+        user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
+        embeddings_path = os.path.join(
+            user_dir, experiment_id, constants.EMBEDDINGS_FILENAME)
+
     embeddings = json.loads(storage.get_file(embeddings_path))
 
     start_time = time.time()
@@ -202,14 +219,14 @@ def cluster(algorithm, params, experiment_id, user_id):
     # calculate silhouettes
 
     silhouettes = []
-    if 2 <= len(set(clusters)) <= len(embeddings) - 1:
+    if 2 <= len(set(clusters)) < len(embeddings):
         silhouettes = silhouette_samples(embeddings, clusters)
         silhouettes = silhouettes.tolist()
 
     # calculate scores
 
     scores = {}
-    if 2 <= len(set(clusters)) <= len(embeddings) - 1:
+    if 2 <= len(set(clusters)) < len(embeddings):
         scores = {
             'calinski_harabasz_score': calinski_harabasz_score(embeddings, clusters),
             'davies_bouldin_score': davies_bouldin_score(embeddings, clusters)
@@ -220,8 +237,13 @@ def cluster(algorithm, params, experiment_id, user_id):
     # setup result
 
     result_id = str(int(time.time()))
-    result_dir = os.path.join(
-        user_dir, experiment_id, constants.CLUSTER_DIR, result_id)
+    if experiment_id.startswith('demo'):
+        user_demo_dir = 'data-{}'.format(user_id)
+        result_dir = os.path.join(
+            experiment_dir, user_demo_dir, constants.CLUSTER_DIR, result_id)
+    else:
+        result_dir = os.path.join(
+            user_dir, experiment_id, constants.CLUSTER_DIR, result_id)
 
     storage.mkdir(result_dir)
 

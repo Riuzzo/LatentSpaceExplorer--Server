@@ -66,7 +66,7 @@ def get_clusters(request: Request, experiment_id: str, user_id: dict = Depends(a
         if file_type == 'file' and file_name == constants.METADATA_FILENAME:
             clu = {}
 
-            clu["id"] = cluster.path.split(os.path.sep)[4]
+            clu["id"] = cluster.path.split(os.path.sep)[-2]
 
             metadata = storage.get_file(cluster.path)
             clu['metadata'] = json.loads(metadata)
@@ -118,16 +118,23 @@ def get_cluster(request: Request, experiment_id: str, cluster_id: str, user_id: 
     response = {}
     storage = request.state.storage
 
-    user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-    experiment_dir = os.path.join(user_dir, experiment_id)
-    cluster_dir = os.path.join(
-        experiment_dir, constants.CLUSTER_DIR, cluster_id)
+    if experiment_id.startswith('demo'):
+        experiment_dir = os.path.join(constants.DEMO_DIR, experiment_id)
+        user_cluster_dir = 'data-{}'.format(user_id)
+        cluster_dir = os.path.join(experiment_dir, user_cluster_dir, constants.CLUSTER_DIR, cluster_id)
+    else:
+        user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
+        experiment_dir = os.path.join(user_dir, experiment_id)
+        cluster_dir = os.path.join(
+            experiment_dir, constants.CLUSTER_DIR, cluster_id)
+    
     metadata_path = os.path.join(cluster_dir, constants.METADATA_FILENAME)
     cluster_path = os.path.join(cluster_dir, constants.CLUSTER_FILENAME)
     silhouette_path = os.path.join(cluster_dir, constants.SILHOUETTE_FILENAME)
     scores_path = os.path.join(cluster_dir, constants.SCORES_FILENAME)
 
     try:
+        # TODO make it more efficient, split into multiple call
         metadata = storage.get_file(metadata_path)
         response['metadata'] = json.loads(metadata)
 
@@ -197,9 +204,14 @@ def post_cluster(
     response = {}
     storage = request.state.storage
 
-    user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-    experiment_dir = os.path.join(user_dir, experiment_id)
-    clusters_dir = os.path.join(experiment_dir, constants.CLUSTER_DIR)
+    if experiment_id.startswith('demo'):
+        experiment_dir = os.path.join(constants.DEMO_DIR, experiment_id)
+        user_cluster_dir = 'data-{}'.format(user_id)
+        clusters_dir = os.path.join(experiment_dir, user_cluster_dir, constants.CLUSTER_DIR)
+    else:
+        user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
+        experiment_dir = os.path.join(user_dir, experiment_id)
+        clusters_dir = os.path.join(experiment_dir, constants.CLUSTER_DIR)
 
     if not storage.dir_exist(experiment_dir):
         return JSONResponse(
@@ -240,10 +252,15 @@ def post_cluster(
 def delete_cluster(request: Request, experiment_id: str, cluster_id: str, user_id: dict = Depends(authorization)):
     storage = request.state.storage
 
-    user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-    experiment_dir = os.path.join(user_dir, experiment_id)
-    cluster_dir = os.path.join(
-        experiment_dir, constants.CLUSTER_DIR, cluster_id)
+    if experiment_id.startswith('demo'):
+        experiment_dir = os.path.join(constants.DEMO_DIR, experiment_id)
+        user_cluster_dir = 'data-{}'.format(user_id)
+        cluster_dir = os.path.join(experiment_dir, user_cluster_dir, constants.CLUSTER_DIR, cluster_id)
+    else:
+        user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
+        experiment_dir = os.path.join(user_dir, experiment_id)
+        cluster_dir = os.path.join(
+            experiment_dir, constants.CLUSTER_DIR, cluster_id)
 
     try:
         storage.delete(cluster_dir)
