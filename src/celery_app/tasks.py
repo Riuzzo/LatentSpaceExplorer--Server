@@ -101,9 +101,15 @@ def shutdown_worker(**kwargs):
 @celery.task(name="reduction")
 def reduction(algorithm, components, params, experiment_id, user_id):
     total_time = time.time()
-    user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
-    embeddings_path = os.path.join(
-        user_dir, experiment_id, constants.EMBEDDINGS_FILENAME)
+    if experiment_id.startswith('demo'):
+        experiment_dir = os.path.join(constants.DEMO_DIR, experiment_id)
+        embeddings_path = os.path.join(
+            experiment_dir, constants.EMBEDDINGS_FILENAME)
+    else:
+        user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
+        embeddings_path = os.path.join(
+            user_dir, experiment_id, constants.EMBEDDINGS_FILENAME)
+
     embeddings = json.loads(storage.get_file(embeddings_path))
 
     start_time = time.time()

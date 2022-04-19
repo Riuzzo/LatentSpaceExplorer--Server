@@ -289,7 +289,7 @@ def delete_reduction(request: Request, experiment_id: str, reduction_id: str, us
     if experiment_id.startswith('demo'):
         experiment_dir = os.path.join(constants.DEMO_DIR, experiment_id)
         user_reduction_dir = 'data-{}'.format(user_id)
-        reduction_dir = os.path.join(experiment_dir, user_reduction_dir, constants.CLUSTER_DIR, reduction_id)
+        reduction_dir = os.path.join(experiment_dir, user_reduction_dir, constants.REDUCTION_DIR, reduction_id)
     else:
         user_dir = '{}{}'.format(constants.NEXTCLOUD_PREFIX_USER_DIR, user_id)
         experiment_dir = os.path.join(user_dir, experiment_id)
