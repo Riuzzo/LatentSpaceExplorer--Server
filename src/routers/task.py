@@ -5,6 +5,10 @@ from src.models.responses.task import TaskModel
 
 from celery.states import state, SUCCESS
 
+import structlog
+
+logger = structlog.getLogger("json_logger")
+
 router = APIRouter()
 
 
@@ -25,5 +29,7 @@ def get_task(task_id):
     if task.state == state(SUCCESS):
         response['name'] = task.name
         response['result_id'] = task.get()
+
+    logger.info(message='Get task', action='get_task', status='SUCCESS', resource='lse-service')
 
     return response

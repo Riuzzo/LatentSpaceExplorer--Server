@@ -1,3 +1,4 @@
+import time
 import os
 import owncloud
 
@@ -10,6 +11,10 @@ from src.models.responses.error import ErrorModel
 
 import src.utils.constants as constants
 from src.utils.authorization import authorization
+
+import structlog
+
+logger = structlog.getLogger("json_logger")
 
 router = APIRouter()
 
@@ -26,6 +31,7 @@ router = APIRouter()
     }
 )
 def get_images_folder_name(request: Request, experiment_id: str, user_id: dict = Depends(authorization)):
+    total_time = time.time()
     response = {}
     storage = request.state.storage
 
@@ -40,11 +46,13 @@ def get_images_folder_name(request: Request, experiment_id: str, user_id: dict =
         response['images_folder_name'] = os.path.split(public_name)[-1]
 
     except:
+        logger.error(message='Experiment images folder name not exist', action='get_images_folder_name', status='FAILED', resource='lse-service', userid=user_id)
         return JSONResponse(
             status_code=404,
             content={"message": "Experiment images folder name not exist"}
         )
-
+    elapsed = time.time() - total_time
+    logger.info(message='Folder link retrieved', duration=elapsed, action='get_images_folder_name', status='SUCCED', resource='lse-service', userid=user_id)
     return response
 
 

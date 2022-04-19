@@ -8,7 +8,7 @@ from typing import Literal
 
 
 class DBSCAN(BaseModel):
-    eps: float = Field(ge=0.01, le=10)
+    eps: float = Field(ge=0.01, le=10000)
     min_samples: int = Field(ge=1, le=300)
     metric: Literal['euclidean', 'cosine', 'minkowski',
                     'manhattan', 'chebyshev', 'canberra', 'mahalanobis']
@@ -23,7 +23,7 @@ class KMeans(BaseModel):
 
 
 class AgglomerativeClustering(BaseModel):
-    distance_threshold: int = Field(ge=1, le=100)
+    distance_threshold: int = Field(ge=1, le=10000)
     affinity: Literal['euclidean', 'cosine', 'manhattan']
     linkage: Literal['ward', 'complete', 'average', 'single']
 
@@ -48,7 +48,7 @@ class GaussianMixture(BaseModel):
 
 
 class Birch(BaseModel):
-    n_clusters: int = Field(ge=1, le=100)
+    n_clusters: int = Field(ge=0, le=100)
     threshold: float = Field(ge=0.1, le=1)
 
 

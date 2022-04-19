@@ -1,5 +1,6 @@
 import os
 import json
+import time
 
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
@@ -14,6 +15,9 @@ from src.models.responses.error import ErrorModel
 import src.utils.constants as constants
 from src.utils.authorization import authorization
 
+import structlog
+
+logger = structlog.getLogger("json_logger")
 
 router = APIRouter()
 
@@ -29,6 +33,7 @@ router = APIRouter()
     }
 )
 def get_clusters(request: Request, experiment_id: str, user_id: dict = Depends(authorization)):
+    total_time = time.time()
     response = []
     storage = request.state.storage
 
@@ -44,16 +49,21 @@ def get_clusters(request: Request, experiment_id: str, user_id: dict = Depends(a
     clusters = []
 
     try:
+        initial_time = time.time() 
         clusters = storage.list(clusters_dir, depth=2)
+        elapsed = time.time() - initial_time
+        logger.debug(message='Retrieved clusters', duration=elapsed, action='get_clusters', subaction='list_clusters', status='SUCCED', resource='lse-service', userid=user_id)
 
     except:
         if not storage.dir_exist(experiment_dir):
+            logger.error(message='Experiment id not valid', action='get_clusters', subaction='list_clusters', status='FAILED', resource='lse-service', userid=user_id)
             return JSONResponse(
                 status_code=404,
                 content={"message": "Experiment id not valid"}
             )
 
         if not storage.dir_exist(clusters_dir):
+            logger.error(message='Clusters dir not valid', action='get_clusters', subaction='list_clusters', status='FAILED', resource='lse-service', userid=user_id)
             return JSONResponse(
                 status_code=404,
                 content={"message": "Clusters dir not valid"}
@@ -68,11 +78,15 @@ def get_clusters(request: Request, experiment_id: str, user_id: dict = Depends(a
 
             clu["id"] = cluster.path.split(os.path.sep)[-2]
 
+            initial_time = time.time()
             metadata = storage.get_file(cluster.path)
+            elapsed = time.time() - initial_time
+            logger.debug(message='Retrieved single cluster metadata', duration=elapsed, action='get_clusters', subaction='get_metadata', status='SUCCED', resource='lse-service', userid=user_id)
             clu['metadata'] = json.loads(metadata)
 
             response.append(clu)
-
+    elapsed = time.time() - total_time
+    logger.info(message='{} clusters retrieved'.format(len(response)    ), duration=elapsed, action='get_clusters', status='SUCCED', resource='lse-service', userid=user_id)
     return response
 
 
@@ -83,6 +97,7 @@ def get_clusters(request: Request, experiment_id: str, user_id: dict = Depends(a
     response_model=ClusterPendingModel,
 )
 def get_pending_clusters_count(experiment_id: str, user_id: dict = Depends(authorization)):
+    total_time = time.time()
     response = {}
     response['count'] = 0
 
@@ -99,7 +114,8 @@ def get_pending_clusters_count(experiment_id: str, user_id: dict = Depends(autho
                     user_id == task['kwargs']['user_id']:
 
                 response['count'] += 1
-
+    elapsed = time.time() - total_time
+    logger.info(message='{} pending clusters retrieved'.format(response['count']), duration=elapsed, action='get_pending_clusters_count', status='SUCCED', resource='lse-service', userid=user_id)
     return response
 
 
@@ -115,6 +131,7 @@ def get_pending_clusters_count(experiment_id: str, user_id: dict = Depends(autho
     }
 )
 def get_cluster(request: Request, experiment_id: str, cluster_id: str, user_id: dict = Depends(authorization)):
+    total_time = time.time()
     response = {}
     storage = request.state.storage
 
@@ -135,55 +152,75 @@ def get_cluster(request: Request, experiment_id: str, cluster_id: str, user_id: 
 
     try:
         # TODO make it more efficient, split into multiple call
+        initial_time = time.time()
         metadata = storage.get_file(metadata_path)
+        elapsed = time.time() - initial_time
+        logger.debug(message='Retrieved single cluster metadata', duration=elapsed, action='get_cluster', subaction='get_metadata', status='SUCCED', resource='lse-service', userid=user_id)
         response['metadata'] = json.loads(metadata)
 
+        initial_time = time.time()
         cluster = storage.get_file(cluster_path)
+        elapsed = time.time() - initial_time
+        logger.debug(message='Retrieved single cluster', duration=elapsed, action='get_cluster', subaction='get_cluster', status='SUCCED', resource='lse-service', userid=user_id)
         response['groups'] = json.loads(cluster)
 
+        initial_time = time.time()
         silohuette = storage.get_file(silhouette_path)
+        elapsed = time.time() - initial_time
+        logger.debug(message='Retrieved single cluster silhouette', duration=elapsed, action='get_cluster', subaction='get_silhouette', status='SUCCED', resource='lse-service', userid=user_id)
         response['silhouettes'] = json.loads(silohuette)
 
+        initial_time = time.time()
         scores = storage.get_file(scores_path)
+        elapsed = time.time() - initial_time
+        logger.debug(message='Retrieved single cluster scores', duration=elapsed, action='get_cluster', subaction='get_scores', status='SUCCED', resource='lse-service', userid=user_id)
         response['scores'] = json.loads(scores)
 
     except:
         if not storage.dir_exist(experiment_dir):
+            logger.error(message='Experiment id not valid', action='get_cluster', status='FAILED', resource='lse-service', userid=user_id)
             return JSONResponse(
                 status_code=404,
                 content={"message": "Experiment id not valid"}
             )
 
         if not storage.dir_exist(cluster_dir):
+            logger.error(message='Cluster id not valid', action='get_cluster', status='FAILED', resource='lse-service', userid=user_id)
             return JSONResponse(
                 status_code=404,
                 content={"message": "Cluster id not valid"}
             )
 
         if not storage.file_exist(metadata_path):
+            logger.error(message='Cluster metadata file not exist', action='get_cluster', status='FAILED', resource='lse-service', userid=user_id)
             return JSONResponse(
                 status_code=404,
                 content={"message": "Cluster metadata file not exist"}
             )
 
         if not storage.file_exist(cluster_path):
+            logger.error(message='Cluster file not exist', action='get_cluster', status='FAILED', resource='lse-service', userid=user_id)
             return JSONResponse(
                 status_code=404,
                 content={"message": "Cluster file not exist"}
             )
 
         if not storage.file_exist(silhouette_path):
+            logger.error(message='Cluster silhouette file not exist', action='get_cluster', status='FAILED', resource='lse-service', userid=user_id)
             return JSONResponse(
                 status_code=404,
                 content={"message": "Cluster silhouette file not exist"}
             )
 
         if not storage.file_exist(scores_path):
+            logger.error(message='Cluster scores file not exist', action='get_cluster', status='FAILED', resource='lse-service', userid=user_id)
             return JSONResponse(
                 status_code=404,
                 content={"message": "Cluster scores file not exist"}
             )
-
+            
+    elapsed = time.time() - total_time
+    logger.info(message='Cluster retrieved', duration=elapsed, action='get_cluster', status='SUCCED', resource='lse-service', userid=user_id)
     return response
 
 
@@ -236,6 +273,10 @@ def post_cluster(
 
     response['task_id'] = task.id
 
+    logger.info(message='Posted cluster task', action='Clustering', subaction=cluster.algorithm, resource='lse-service', userid=user_id)
+    logger.accounting(message='Posted cluster task', action='Clustering', value=1, measure="unit", resource='lse', userid=user_id)
+
+
     return response
 
 
@@ -264,18 +305,20 @@ def delete_cluster(request: Request, experiment_id: str, cluster_id: str, user_i
 
     try:
         storage.delete(cluster_dir)
-
+        logger.info(message='Deleted cluster {}'.format(cluster_id), action='delete_cluster', resource='lse-service', userid=user_id)
     except:
         if not storage.dir_exist(experiment_dir):
+            logger.error(message='Experiment id not valid', action='delete_cluster', status='FAILED', resource='lse-service', userid=user_id)
             return JSONResponse(
                 status_code=404,
                 content={"message": "Experiment id not valid"}
             )
 
         if not storage.dir_exist(cluster_dir):
+            logger.error(message='Cluster id not valid', action='delete_cluster', status='FAILED', resource='lse-service', userid=user_id)
             return JSONResponse(
                 status_code=404,
                 content={"message": "Cluster id not valid"}
             )
-
+    
     return True
