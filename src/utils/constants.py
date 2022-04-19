@@ -1,9 +1,10 @@
-### Paths
-
+# "lse-${user_id}"
 # "lse-${user_id}/${experiment_id}"
 # "lse-${user_id}/${experiment_id}/metadata.json"
 # "lse-${user_id}/${experiment_id}/embeddings.json"
 # "lse-${user_id}/${experiment_id}/labels.json"
+# "lse-${user_id}/${experiment_id}/images"
+# "lse-${user_id}/${experiment_id}/images/${image_id}"
 
 # "lse-${user_id}/${experiment_id}/reductions"
 # "lse-${user_id}/${experiment_id}/reductions/${reduction_id}/metadata.json"
@@ -15,11 +16,14 @@
 # "lse-${user_id}/${experiment_id}/clusters/${cluster_id}/score.json"
 # "lse-${user_id}/${experiment_id}/clusters/${cluster_id}/silhouette.json"
 
+# "lse-demo"
 # "lse-demo/${experiment_id}"
 # "lse-demo/${experiment_id}/data-${user_id}"
 # "lse-${user_id}/${experiment_id}/metadata.json"
 # "lse-${user_id}/${experiment_id}/embeddings.json"
 # "lse-${user_id}/${experiment_id}/labels.json"
+# "lse-${user_id}/${experiment_id}/images"
+# "lse-${user_id}/${experiment_id}/images/${image_id}"
 
 # "lse-demo/${experiment_id}/data-${user_id}"/reductions"
 # "lse-demo/${experiment_id}/data-${user_id}"/reductions/${reduction_id}/metadata.json"

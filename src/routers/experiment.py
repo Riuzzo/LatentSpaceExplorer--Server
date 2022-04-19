@@ -14,7 +14,6 @@ from utils.storage import Storage
 
 router = APIRouter()
 
-
 def check_and_create_user_demo_folder(user_id: str, storage: Storage, experiment_id: str):
     user_dir = '{}{}'.format("data-", user_id)
     user_demo_path = os.path.join(constants.DEMO_DIR, experiment_id, user_dir)
