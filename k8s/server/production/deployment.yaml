@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: server
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: server
@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
         - name: server
-          image: gitlab.neanias.eu:5050/s3-service/latent-space-explorer/server:v1.1.2-production
+          image: gitlab.neanias.eu:5050/s3-service/latent-space-explorer/server:v1.1.3-production
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
