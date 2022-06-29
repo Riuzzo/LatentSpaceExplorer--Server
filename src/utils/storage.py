@@ -37,7 +37,13 @@ class Storage():
 
     @retry(exceptions=(ConnectionError))
     def list(self, dir_path, depth=1):
-        return self.oc.list(dir_path, depth)
+        try:
+            return self.oc.list(dir_path, depth)
+
+        except HTTPResponseError as exception:
+            print('storage exception:\n\t{}\n\t{}'.format(exception, dir_path))
+            return []
+        
 
     @retry(exceptions=(ConnectionError))
     def get_file(self, file_path):
