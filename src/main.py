@@ -73,7 +73,6 @@ if not logger.handlers:
 
 # environment
 load_dotenv()
-load_dotenv(os.getenv('ENVIRONMENT_FILE'))
 
 storage = Storage(host=os.getenv('NEXCLOUD_HOST'))
 app = FastAPI(root_path=os.getenv('APP_SERVER_ROOT_PATH'))
