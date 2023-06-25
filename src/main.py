@@ -1,8 +1,8 @@
 import os
 import time
-from dotenv import load_dotenv
 from fastapi.exceptions import HTTPException, RequestValidationError
 from fastapi.encoders import jsonable_encoder
+from dotenv import load_dotenv
 
 # server
 import uvicorn

@@ -1,0 +1,25 @@
+FROM python:3.8-slim as build
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gcc
+
+WORKDIR /source
+
+COPY requirements.txt /source/
+
+RUN python3 -m venv /source/venv && \
+    python3 -m ensurepip --upgrade && \
+    python3 -m pip install -r /source/requirements.txt
+
+
+FROM python:3.8-slim
+
+WORKDIR /source
+
+COPY --from=build /source /source
+
+COPY . .
+
+ENV ENVIRONMENT local
+
+CMD ["python3", "src/main.py"]
