@@ -1,27 +1,37 @@
-FROM python:3.8-slim as base
+FROM python:3.8-slim as build
+
+RUN pip install --upgrade pip
+
+WORKDIR /app
 
 RUN apt-get update && \
     apt-get install -y --no-install-recommends gcc
 
-WORKDIR /source
+RUN python3 -m venv /opt/venv 
+ENV PATH="/opt/venv/bin:$PATH"
 
-COPY requirements.txt /source/
-
-RUN python3 -m venv /source/venv && \
-    . /source/venv/bin/activate && \
-    python3 -m ensurepip --upgrade && \
-    python3 -m pip install -r /source/requirements.txt
-
-COPY . . 
+COPY requirements.txt /app
+RUN pip install --no-cache-dir -r requirements.txt
 
 
-FROM python:3.8-slim as final
+FROM python:3.8-slim
 
-WORKDIR /source
+WORKDIR /app
 
-COPY --from=base /source /source
+COPY --from=build /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 
-ENV ENVIRONMENT local 
+COPY ./src /app/src
 
-CMD . /source/venv/bin/activate && \
-    python3 src/main.py
+WORKDIR /app/src
+
+ENV ENVIRONMENT local
+ENV NEXCLOUD_HOST https://b2drop.eudat.eu
+ENV NEXCLOUD_USER ab1fdb5b-83a4-42b8-8d0a-c9fe599a82df
+ENV NEXCLOUD_PASSWORD 4rxCq-Ntayt-qz7dB-WDSAM-Kc4p9
+ENV APP_SERVER_HOST 0.0.0.0
+ENV APP_SERVER_PORT 8080
+ENV APP_SERVER_ROOT_PATH /
+ENV APP_SERVER_RELOAD True
+
+CMD ["python3", "main.py"]

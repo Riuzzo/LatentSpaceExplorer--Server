@@ -16,10 +16,10 @@ from sklearn.metrics import silhouette_samples, calinski_harabasz_score, davies_
 # scheduler
 from celery import Celery
 from celery.signals import worker_process_init, worker_process_shutdown
-from src.celery_app import celeryconfig
+from celery_app import celeryconfig
 
-import src.utils.constants as constants
-from src.utils.storage import Storage
+import utils.constants as constants
+from utils.storage import Storage
 
 # logging
 import logging

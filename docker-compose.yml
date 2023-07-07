@@ -1,20 +1,51 @@
 services:
-  server:
-      ports:
-        - "8080:8080"
+  storage:
+    image: minio/minio:latest
+    ports:
+      - "9000:9000"
+      - "9090:9090"
 
-      environment:
-        - NEXCLOUD_HOST=https://b2drop.eudat.eu
-        - NEXCLOUD_USER=ab1fdb5b-83a4-42b8-8d0a-c9fe599a82df
-        - NEXCLOUD_PASSWORD=4rxCq-Ntayt-qz7dB-WDSAM-Kc4p9
-        - APP_SERVER_HOST=0.0.0.0
-        - APP_SERVER_PORT=8080
-        - APP_SERVER_ROOT_PATH=/
-        - APP_SERVER_RELOAD=True
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
 
-      build:
-        context: ./dockerfiles/server
-        dockerfile: Dockerfile.multistage
+    volumes:
+      - ./minio/data:/data
+
+    command: server --console-address ":9090" /data
+  #server:
+   #   ports:
+    #    - "8080:8080"
+
+     # environment:
+      #  - NEXCLOUD_HOST=https://b2drop.eudat.eu
+      # - NEXCLOUD_USER=ab1fdb5b-83a4-42b8-8d0a-c9fe599a82df
+      # - NEXCLOUD_PASSWORD=4rxCq-Ntayt-qz7dB-WDSAM-Kc4p9
+      # - APP_SERVER_HOST=0.0.0.0
+      # - APP_SERVER_PORT=8080
+      # - APP_SERVER_ROOT_PATH=/
+      # - APP_SERVER_RELOAD=True
+
+      #build:
+        #context: .
+        #dockerfile: ./dockerfiles/server/Dockerfile.multistage
+
+  #client:
+    #image: riuzzo01/client
+    #ports:
+      #- "3000:8080"
+    #environment:
+     # - NEXT_PUBLIC_NEXTCLOUD_URL=https://b2drop.eudat.eu/
+     # - NEXTAUTH_URL=http://lse.local
+     # - NEXTAUTH_SECRET=bPeShVmYq3t6w9z$$C&F)J@NcRfTjWnZr
+     # - NEXT_PUBLIC_NEXTAUTH_NEANIAS=false
+      # - NEXT_PUBLIC_NEXTAUTH_AUTH0=true
+      # - SERVER_SERVICE_HOST=0.0.0.0
+      # - SERVER_SERVICE_PORT=8080
+      # - NEXT_PUBLIC_SERVER_URL=http://0.0.0.0:8080
+      # - NEXT_PUBLIC_NEXTAUTH_AUTH0_DOMAIN=dev-jnjt4ptifhmcn0y2.us.auth0.com
+      # - NEXT_PUBLIC_NEXTAUTH_AUTH0_CLIENT_ID=1TUD0HH8gO8G7t0vGVQMVTj7FinLJJpc
+      # - NEXT_PUBLIC_NEXTAUTH_AUTH0_CLIENT_SECRET=AsiPz5wuFlgIwGrMOutfARhPgzuzitAQ3FE0qResQQJFtox1uWSGIrgB0Z5vBX6d
 
      
     

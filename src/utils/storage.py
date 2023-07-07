@@ -2,7 +2,7 @@ import owncloud
 from owncloud import HTTPResponseError
 from requests.exceptions import ConnectionError
 
-from src.utils.retry import retry
+from utils.retry import retry
 
 
 class Storage():

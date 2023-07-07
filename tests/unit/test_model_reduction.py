@@ -1,4 +1,4 @@
-from src.models.requests.reduction import PCAModel, TSNEModel, UMAPModel
+from models.requests.reduction import PCAModel, TSNEModel, UMAPModel
 
 
 # pca

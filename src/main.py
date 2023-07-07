@@ -12,11 +12,11 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 # routers
-from src.routers import experiment, reduction, cluster, label, task, image, status
+from routers import experiment, reduction, cluster, label, task, image, status
 
 # other
-from src.utils.storage import Storage
-from src.utils.authorization import AuthError
+from utils.storage import Storage
+from utils.authorization import AuthError
 
 # logging
 import logging

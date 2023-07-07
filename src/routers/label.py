@@ -5,11 +5,11 @@ import time
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
 
-from src.models.responses.label import LabelModel
-from src.models.responses.error import ErrorModel
+from models.responses.label import LabelModel
+from models.responses.error import ErrorModel
 
-import src.utils.constants as constants
-from src.utils.authorization import authorization
+import utils.constants as constants
+from utils.authorization import authorization
 
 
 import structlog
