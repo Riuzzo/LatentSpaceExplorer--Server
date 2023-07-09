@@ -10,7 +10,7 @@ class Storage_minio():
         self.client = Minio(host, access_key, secret_key, secure=False)
 
     @retry(exceptions=(ConnectionError))
-    def bucket_exist(self, bucket_name):
+    def dir_exist(self, bucket_name):
         try:
             return self.client.bucket_exists(bucket_name)
 
@@ -49,7 +49,7 @@ class Storage_minio():
 
     
     @retry(exceptions=(ConnectionError))
-    def make_bucket(self, bucket_name):
+    def mkdir(self, bucket_name):
         return self.client.make_bucket(bucket_name)
     
     @retry(exceptions=(ConnectionError))
