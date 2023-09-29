@@ -1,4 +1,4 @@
-FROM python:3.8-slim as build
+FROM python:3.8 as build
 
 RUN pip install --upgrade pip
 
@@ -24,14 +24,5 @@ ENV PATH="/opt/venv/bin:$PATH"
 COPY ./src /app/src
 
 WORKDIR /app/src
-
-ENV ENVIRONMENT local
-ENV NEXCLOUD_HOST https://b2drop.eudat.eu
-ENV NEXCLOUD_USER ab1fdb5b-83a4-42b8-8d0a-c9fe599a82df
-ENV NEXCLOUD_PASSWORD 4rxCq-Ntayt-qz7dB-WDSAM-Kc4p9
-ENV APP_SERVER_HOST 0.0.0.0
-ENV APP_SERVER_PORT 8080
-ENV APP_SERVER_ROOT_PATH /
-ENV APP_SERVER_RELOAD True
 
 CMD ["python3", "main.py"]
