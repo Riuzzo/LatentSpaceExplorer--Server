@@ -3,13 +3,15 @@ from utils.storage_minio import Storage_minio
 
 class Storage():
     
-    def __init__(self, host, access_key="", secret_key=""):
-        if access_key == "" and secret_key == "":
+    def __init__(self, host, storage_type:str = "Nextcloud", **kwargs):
+        if storage_type == "Nextcloud":
             self.storage_type = "owncloud"
             self.storage = Storage_owncloud(host)
-        else:
+        elif storage_type == "MinIO":
             self.storage_type = "minio"
-            self.storage = Storage_minio(host, access_key, secret_key)
+            self.storage = Storage_minio(host, kwargs['access_key'], kwargs['secret_key'])
+        else:
+            raise Exception("Storage type not yet implemented")
 
     def connect(self, user, password):
         return self.storage.connect(user, password) if self.storage_type == "owncloud" else None
