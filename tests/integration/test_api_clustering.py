@@ -1,7 +1,7 @@
 from fastapi.testclient import TestClient
 
-from src.main import app
-from src.utils.common import get_results_meta
+from main import app
+from utils.common import get_results_meta
 
 
 client = TestClient(app, root_path='/server')

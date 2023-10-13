@@ -6,14 +6,14 @@ from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
 from typing import Union, List
 
-from src.celery_app import tasks
-from src.models.requests.reduction import PCAModel, TSNEModel, UMAPModel, TruncatedSVDModel, SpectralEmbeddingModel, IsomapModel, MDSModel
-from src.models.responses.reduction import ReductionBaseModel, ReductionModel, ReductionPendingModel
-from src.models.responses.task import TaskBaseModel
-from src.models.responses.error import ErrorModel
+from celery_app import tasks
+from models.requests.reduction import PCAModel, TSNEModel, UMAPModel, TruncatedSVDModel, SpectralEmbeddingModel, IsomapModel, MDSModel
+from models.responses.reduction import ReductionBaseModel, ReductionModel, ReductionPendingModel
+from models.responses.task import TaskBaseModel
+from models.responses.error import ErrorModel
 
-import src.utils.constants as constants
-from src.utils.authorization import authorization
+import utils.constants as constants
+from utils.authorization import authorization
 
 import structlog
 

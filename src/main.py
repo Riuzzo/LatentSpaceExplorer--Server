@@ -12,11 +12,11 @@ from fastapi.responses import JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 
 # routers
-from src.routers import experiment, reduction, cluster, label, task, image, status
+from routers import experiment, reduction, cluster, label, task, image, status
 
 # other
-from src.utils.storage import Storage
-from src.utils.authorization import AuthError
+from utils.storage import Storage
+from utils.authorization import AuthError
 
 # logging
 import logging
@@ -75,7 +75,7 @@ if not logger.handlers:
 load_dotenv()
 load_dotenv(os.getenv('ENVIRONMENT_FILE'))
 
-storage = Storage(host=os.getenv('NEXCLOUD_HOST'))
+storage = Storage(host=os.getenv('HOST'), storage_type=os.getenv('STORAGE_TYPE'))
 app = FastAPI(root_path=os.getenv('APP_SERVER_ROOT_PATH'))
 
 
@@ -171,21 +171,23 @@ app.include_router(status.router)
 # startup event
 @app.on_event("startup")
 async def startup():
-    initial_time = time.time()
-    storage.connect(
-        user=os.getenv('NEXCLOUD_USER'),
-        password=os.getenv('NEXCLOUD_PASSWORD'),
-    )
-    elapsed = time.time() - initial_time
-    #Add time elapsed to the log?
-    logger.info(message='Storage client connected to nextcloud', duration=elapsed, action='storage_client_connected', resource='lse-service', userid="Server")
+    if os.getenv('STORAGE_TYPE') == 'nextcloud':
+      initial_time = time.time()
+      storage.connect(
+        user=os.getenv('USER'),
+        password=os.getenv('PASSWORD'),
+      )
+      elapsed = time.time() - initial_time
+      #Add time elapsed to the log?
+      logger.info(message='Storage client connected to nextcloud', duration=elapsed, action='storage_client_connected', resource='lse-service', userid="Server")
 
 
 # shutdown event
 @app.on_event("shutdown")
 async def shutdown():
-    storage.disconnect()
-    logger.info(message='Storage client disconnected from nextcloud', action='storage_client_disconnected', resource='lse-service', userid="Server")
+    if os.getenv('STORAGE_TYPE') == 'nextcloud':
+      storage.disconnect()
+      logger.info(message='Storage client disconnected from nextcloud', action='storage_client_disconnected', resource='lse-service', userid="Server")
 
 
 if __name__ == "__main__":

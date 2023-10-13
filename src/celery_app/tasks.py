@@ -16,10 +16,10 @@ from sklearn.metrics import silhouette_samples, calinski_harabasz_score, davies_
 # scheduler
 from celery import Celery
 from celery.signals import worker_process_init, worker_process_shutdown
-from src.celery_app import celeryconfig
+from celery_app import celeryconfig
 
-import src.utils.constants as constants
-from src.utils.storage import Storage
+import utils.constants as constants
+from utils.storage import Storage
 
 # logging
 import logging
@@ -80,14 +80,14 @@ celery.config_from_object(celeryconfig)
 load_dotenv()
 load_dotenv(os.getenv('ENVIRONMENT_FILE'))
 
-storage = Storage(host=os.getenv('NEXCLOUD_HOST'))
+storage = Storage(host=os.getenv('HOST'), storage_type=os.getenv('STORAGE_TYPE'))
 
 
 @worker_process_init.connect
 def init_worker(**kwargs):
     storage.connect(
-        user=os.getenv('NEXCLOUD_USER'),
-        password=os.getenv('NEXCLOUD_PASSWORD'),
+        user=os.getenv('USER'),
+        password=os.getenv('PASSWORD'),
     )
     logger.info(message='Storage client connected to nextcloud', action='storage_client_connected', status='SUCCESS', resource='lse-service', userid="celery")
 

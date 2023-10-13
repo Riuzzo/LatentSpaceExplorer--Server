@@ -1,4 +1,4 @@
-from src.models.requests.clustering import AffinityPropagationModel, DBSCANModel, KMeansModel, AgglomerativeClusteringModel
+from models.requests.clustering import AffinityPropagationModel, DBSCANModel, KMeansModel, AgglomerativeClusteringModel
 
 
 # affinity propagation

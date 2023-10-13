@@ -6,11 +6,11 @@ from fastapi import APIRouter, Request, Depends
 from fastapi.responses import JSONResponse
 from pydantic import AnyHttpUrl
 
-from src.models.responses.image import ImagesFolderModel
-from src.models.responses.error import ErrorModel
+from models.responses.image import ImagesFolderModel
+from models.responses.error import ErrorModel
 
-import src.utils.constants as constants
-from src.utils.authorization import authorization
+import utils.constants as constants
+from utils.authorization import authorization
 
 import structlog
 

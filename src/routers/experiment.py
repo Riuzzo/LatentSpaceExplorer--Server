@@ -6,11 +6,11 @@ from fastapi import APIRouter, Request, Depends, BackgroundTasks
 from fastapi.responses import JSONResponse
 from typing import List
 
-from src.models.responses.experiment import ExperimentBaseModel, ExperimentModel
-from src.models.responses.error import ErrorModel
+from models.responses.experiment import ExperimentBaseModel, ExperimentModel
+from models.responses.error import ErrorModel
 
-import src.utils.constants as constants
-from src.utils.authorization import authorization
+import utils.constants as constants
+from utils.authorization import authorization
 from utils.storage import Storage
 
 import structlog

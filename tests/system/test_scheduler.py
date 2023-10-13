@@ -1,4 +1,4 @@
-from src.celery_app.tasks import celery
+from celery_app.tasks import celery
 
 
 def test_scheduler():

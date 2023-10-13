@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
-from src.celery_app.tasks import celery
-from src.models.responses.task import TaskModel
+from celery_app.tasks import celery
+from models.responses.task import TaskModel
 
 from celery.states import state, SUCCESS
 

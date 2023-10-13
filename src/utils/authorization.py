@@ -2,7 +2,7 @@ import time
 from fastapi import Header, Request
 from pydantic import Required
 
-import src.utils.constants as constants
+import utils.constants as constants
 
 import structlog
 

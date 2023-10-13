@@ -1,0 +1,28 @@
+FROM python:3.8 as build
+
+RUN pip install --upgrade pip
+
+WORKDIR /app
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends gcc
+
+RUN python3 -m venv /opt/venv 
+ENV PATH="/opt/venv/bin:$PATH"
+
+COPY requirements.txt /app
+RUN pip install --no-cache-dir -r requirements.txt
+
+
+FROM python:3.8-slim
+
+WORKDIR /app
+
+COPY --from=build /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+COPY ./src /app/src
+
+WORKDIR /app/src
+
+CMD ["python3", "main.py"]

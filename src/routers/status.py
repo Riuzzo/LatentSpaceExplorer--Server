@@ -4,8 +4,8 @@ import time
 
 from fastapi import APIRouter
 
-from src.celery_app.tasks import celery
-from src.models.responses.status import StatusModel
+from celery_app.tasks import celery
+from models.responses.status import StatusModel
 
 import structlog
 
